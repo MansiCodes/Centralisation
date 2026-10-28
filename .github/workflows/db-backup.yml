@@ -1,0 +1,134 @@
+# Automated PostgreSQL backup → AWS S3
+#
+# Schedule: every 2 days at 02:30 IST (21:00 UTC previous day)
+#           + every Sunday at 03:00 IST (21:30 UTC Saturday)
+#
+# Backup files are stored in S3 under:
+#   s3://<BACKUP_S3_BUCKET>/postgres/<YYYY-MM-DD_HH-MM>.dump
+#
+# Retention: last 30 backups are kept; older ones are deleted automatically.
+#
+# Required GitHub repo secrets (Settings → Secrets and variables → Actions):
+#   DATABASE_URL         Full postgres:// connection string (same as .env)
+#   BACKUP_S3_BUCKET     S3 bucket name, e.g. price-master-backups
+#   BACKUP_AWS_REGION    AWS region of the bucket, e.g. ap-south-1
+#   BACKUP_AWS_KEY       AWS access key ID with s3:PutObject + s3:ListBucket + s3:DeleteObject
+#   BACKUP_AWS_SECRET    AWS secret access key for the above
+
+name: Database Backup
+
+on:
+  schedule:
+    # Every 2 days at 21:00 UTC = 02:30 IST next day
+    - cron: "0 21 */2 * *"
+    # Every Sunday at 21:30 UTC = 03:00 IST Monday (weekly full copy)
+    - cron: "30 21 * * 0"
+  workflow_dispatch:   # allow manual trigger from GitHub Actions UI
+
+jobs:
+  backup:
+    name: pg_dump → S3
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client
+
+      - name: Validate secrets
+        run: |
+          missing=""
+          [ -z "$DATABASE_URL" ]        && missing="$missing DATABASE_URL"
+          [ -z "$BACKUP_S3_BUCKET" ]    && missing="$missing BACKUP_S3_BUCKET"
+          [ -z "$BACKUP_AWS_REGION" ]   && missing="$missing BACKUP_AWS_REGION"
+          [ -z "$BACKUP_AWS_KEY" ]      && missing="$missing BACKUP_AWS_KEY"
+          [ -z "$BACKUP_AWS_SECRET" ]   && missing="$missing BACKUP_AWS_SECRET"
+          if [ -n "$missing" ]; then
+            echo "❌ Missing secrets:$missing"
+            echo "Go to: GitHub repo → Settings → Secrets and variables → Actions"
+            exit 1
+          fi
+          echo "✅ All secrets present"
+        env:
+          DATABASE_URL:       ${{ secrets.DATABASE_URL }}
+          BACKUP_S3_BUCKET:   ${{ secrets.BACKUP_S3_BUCKET }}
+          BACKUP_AWS_REGION:  ${{ secrets.BACKUP_AWS_REGION }}
+          BACKUP_AWS_KEY:     ${{ secrets.BACKUP_AWS_KEY }}
+          BACKUP_AWS_SECRET:  ${{ secrets.BACKUP_AWS_SECRET }}
+
+      - name: Run pg_dump
+        id: dump
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          TIMESTAMP=$(date -u +%Y-%m-%d_%H-%M)
+          FILENAME="postgres/${TIMESTAMP}.dump"
+          echo "filename=${FILENAME}" >> "$GITHUB_OUTPUT"
+          echo "timestamp=${TIMESTAMP}" >> "$GITHUB_OUTPUT"
+
+          pg_dump "$DATABASE_URL" \
+            --no-owner \
+            --no-acl \
+            --format=custom \
+            --compress=9 \
+            --file="/tmp/backup.dump"
+
+          SIZE=$(du -sh /tmp/backup.dump | cut -f1)
+          echo "✅ Dump complete — size: ${SIZE}"
+          echo "size=${SIZE}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload to S3
+        env:
+          AWS_ACCESS_KEY_ID:     ${{ secrets.BACKUP_AWS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_AWS_SECRET }}
+          AWS_DEFAULT_REGION:    ${{ secrets.BACKUP_AWS_REGION }}
+          BACKUP_S3_BUCKET:      ${{ secrets.BACKUP_S3_BUCKET }}
+        run: |
+          FILENAME="${{ steps.dump.outputs.filename }}"
+          aws s3 cp /tmp/backup.dump "s3://${BACKUP_S3_BUCKET}/${FILENAME}" \
+            --storage-class STANDARD_IA
+          echo "✅ Uploaded to s3://${BACKUP_S3_BUCKET}/${FILENAME}"
+
+      - name: Prune old backups (keep latest 30)
+        env:
+          AWS_ACCESS_KEY_ID:     ${{ secrets.BACKUP_AWS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_AWS_SECRET }}
+          AWS_DEFAULT_REGION:    ${{ secrets.BACKUP_AWS_REGION }}
+          BACKUP_S3_BUCKET:      ${{ secrets.BACKUP_S3_BUCKET }}
+        run: |
+          # List all backup files sorted oldest-first, delete any beyond 30
+          FILES=$(aws s3api list-objects-v2 \
+            --bucket "$BACKUP_S3_BUCKET" \
+            --prefix "postgres/" \
+            --query "sort_by(Contents, &LastModified)[].Key" \
+            --output text)
+
+          COUNT=$(echo "$FILES" | wc -w)
+          KEEP=30
+          DELETE_COUNT=$((COUNT - KEEP))
+
+          if [ "$DELETE_COUNT" -le 0 ]; then
+            echo "✅ ${COUNT} backups stored — no pruning needed (limit: ${KEEP})"
+            exit 0
+          fi
+
+          echo "🗑  Pruning ${DELETE_COUNT} old backup(s) (have ${COUNT}, keeping ${KEEP})..."
+          TO_DELETE=$(echo "$FILES" | tr '\t' '\n' | head -n "$DELETE_COUNT")
+          for KEY in $TO_DELETE; do
+            echo "  Deleting: ${KEY}"
+            aws s3 rm "s3://${BACKUP_S3_BUCKET}/${KEY}"
+          done
+          echo "✅ Pruning complete"
+
+      - name: Summary
+        run: |
+          echo "### 🗄 Backup Complete" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Field | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Timestamp | ${{ steps.dump.outputs.timestamp }} UTC |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| File | \`${{ steps.dump.outputs.filename }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Size | ${{ steps.dump.outputs.size }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Bucket | \`${{ secrets.BACKUP_S3_BUCKET }}\` |" >> "$GITHUB_STEP_SUMMARY"
