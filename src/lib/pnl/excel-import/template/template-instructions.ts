@@ -4,6 +4,7 @@ import {
   QUAD_SIGNAL_STOCK_RAW_MATERIALS,
   UPCAST_MISC_NATURES,
 } from "@/lib/plant-catalogs";
+import { isSslPlant } from "@/lib/plant-layout";
 import type { PlantFamily } from "./plant-family";
 
 type InstructionsOpts = {
@@ -133,6 +134,19 @@ export function addInstructionsSheet(
       ]);
       guide.addRow([
         `   • Cables: ${QUAD_SIGNAL_STOCK_CABLES.filter((x) => x !== "Other").join(" · ")}`,
+      ]);
+    } else if (isSslPlant(code)) {
+      guide.addRow([
+        "8. SL SSL Plant — Multiple items per invoice are supported:",
+      ]);
+      guide.addRow([
+        "   • To enter multiple items under the same invoice, use the same Invoice no. and Date on multiple rows.",
+      ]);
+      guide.addRow([
+        "   • In the application, all items under that invoice will be grouped into one table row showing total quantity and total amount.",
+      ]);
+      guide.addRow([
+        "   • Invoice numbers must be unique within the same transaction type (Purchase vs Sales) on the same date.",
       ]);
     }
   }

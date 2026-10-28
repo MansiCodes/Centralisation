@@ -38,8 +38,9 @@ Thumbs.db
 .vscode/
 *.code-workspace
 
-# Cursor AI rules / skills (local only — do not push)
+# AI assistant config (local only — no impact on app code)
 .cursor/
+.kiro/
 
 # Coverage
 coverage/

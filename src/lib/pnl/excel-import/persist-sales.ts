@@ -1,4 +1,5 @@
 import { isBackdated, parseDateOnly } from "@/lib/dates";
+import { isSslPlant } from "@/lib/plant-layout";
 import { safeWriteAuditLog } from "@/lib/audit";
 import { round2 } from "@/lib/pnl/excel-import/cells";
 import {
@@ -39,11 +40,34 @@ export async function persistSales(
     const billRaw = row.billNumber?.trim() ?? "";
     const invoiceWhere = invoiceNumberMatchWhere(billRaw);
 
+    const isSsl = isSslPlant(familyKey);
     let existing = null;
-    if (billRaw) {
-      existing = await prisma.sale.findFirst({
-        where: { ...pScope, type: row.type, OR: invoiceWhere },
-      });
+    if (isSsl) {
+      if (billRaw) {
+        // For SSL: same invoice can have many rows with the same item description
+        // but different qty/rate (e.g. 6 shipments of "LED SIGNALLING L PCS").
+        // Treat each unique {invoiceNumber + itemDescription + quantity + rate}
+        // combo as a distinct line item — only match if ALL four agree.
+        existing = await prisma.sale.findFirst({
+          where: {
+            ...pScope,
+            date: day,
+            OR: invoiceWhere,
+            itemDescription: {
+              equals: row.itemDescription?.trim() || "",
+              mode: "insensitive",
+            },
+            quantity: row.quantity,
+            rate: row.rate,
+          },
+        });
+      }
+    } else {
+      if (billRaw) {
+        existing = await prisma.sale.findFirst({
+          where: { ...pScope, type: row.type, OR: invoiceWhere },
+        });
+      }
     }
 
     if (!existing) {

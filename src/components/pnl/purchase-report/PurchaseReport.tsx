@@ -6,13 +6,14 @@ import { formatINR } from "@/lib/format/inr";
 import { ReportTable, type ReportColumn } from "@/components/pnl/ReportTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { usePaginatedReport } from "@/components/pnl/usePaginatedReport";
-import { isCat6Plant } from "@/lib/plant-layout";
+import { isCat6Plant, isSslPlant } from "@/lib/plant-layout";
 import { ReportRowActions } from "@/components/pnl/ReportRowActions";
 import { toYmd } from "@/components/pnl/EntryEditDrawer";
 import { useReportCrud } from "@/components/pnl/useReportCrud";
 import { collectBillPhotoUrls } from "@/lib/bill-photos";
 import { buildAtclPurchaseColumns, buildPvcPurchaseColumns } from "@/components/pnl/purchase-report/columns-pvc";
 import { buildCat6PurchaseColumns, buildDefaultPurchaseColumns } from "@/components/pnl/purchase-report/columns-default";
+import { buildSslPurchaseColumns } from "@/components/pnl/purchase-report/columns-ssl";
 import { PurchaseEditDrawer } from "@/components/pnl/purchase-report/edit";
 import { formatQty } from "@/components/pnl/purchase-report/format";
 import type { PurchaseRow } from "@/components/pnl/purchase-report/types";
@@ -86,11 +87,12 @@ export function PurchaseReport({
   };
 
   const activeColumns = useMemo(() => {
+    if (isSslPlant(plantCode)) return buildSslPurchaseColumns(page, pageSize);
     if (cat6) return buildCat6PurchaseColumns(page, pageSize);
     if (purchaseView === "atcl") return buildAtclPurchaseColumns(page, pageSize);
     if (isPvc) return buildPvcPurchaseColumns(page, pageSize);
     return buildDefaultPurchaseColumns(page, pageSize);
-  }, [cat6, isPvc, purchaseView, page, pageSize]);
+  }, [plantCode, cat6, isPvc, purchaseView, page, pageSize]);
 
   return (
     <section className="pnl-report-panel">

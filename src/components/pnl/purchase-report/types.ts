@@ -22,4 +22,21 @@ export type PurchaseRow = {
   approvedByHead?: boolean;
   approvedByAdmin?: boolean;
   approvalRequired?: boolean;
+  items?: Array<{
+    id?: string;
+    itemDescription: string;
+    quantity: string | number;
+    debitQuantity?: string | number | null;
+    unit?: string;
+    rate?: string | number;
+    basicValue?: string | number;
+    gstPercent?: string | number;
+    gstAmount?: string | number;
+    invoiceValue?: string | number;
+  }>;
+  itemIds?: string[];
+  totalQuantity?: number;
+  totalBasicValue?: number;
+  totalGstAmount?: number;
+  totalInvoiceValue?: number;
 };

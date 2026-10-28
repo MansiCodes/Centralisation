@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requirePlantAccess, requireSession } from "@/lib/api";
+import { requirePlantAccess, requireSession, round2 } from "@/lib/api";
 import { resolveEntryApprovalFlags } from "@/lib/entry-approval";
 import { dateRangeFromSearchParams } from "@/lib/api-date-range";
 import { prisma } from "@/lib/db";
-import { isCat6Plant } from "@/lib/plant-layout";
+import { isCat6Plant, isSslPlant } from "@/lib/plant-layout";
 import { seesOwnEntriesOnly } from "@/lib/rbac";
 import { paginate } from "@/lib/ui/paginate";
 import { plantIdFilter, resolveReportPlantIds } from "@/lib/plant-merge";
@@ -68,7 +68,88 @@ export async function GET(
     include: { enteredBy: { select: { globalRole: true } } },
   });
 
-  const { slice, ...pageInfo } = paginate(sales, page, pageSize);
+  const isSsl = isSslPlant(plant?.code);
+
+  type SaleItemDetail = {
+    id: string;
+    itemDescription: string;
+    quantity: number;
+    unit: string;
+    rate: number;
+    salesValue: number;
+    inMeter?: number | null;
+    qtyMtr?: number | null;
+    meterUnit?: string | null;
+  };
+
+  type GroupedSale = (typeof sales)[0] & {
+    items?: SaleItemDetail[];
+    itemIds?: string[];
+    totalQuantity?: number;
+    totalSalesValue?: number;
+  };
+
+  let rowsToPaginate: GroupedSale[] = sales;
+  if (isSsl) {
+    const map = new Map<string, GroupedSale>();
+    for (const row of sales) {
+      const dateKey = row.date.toISOString().slice(0, 10);
+      const billKey = row.billNumber?.trim().toUpperCase() || "";
+      const groupKey = billKey ? `${dateKey}|${billKey}` : `row|${row.id}`;
+      const itemDetail: SaleItemDetail = {
+        id: row.id,
+        itemDescription: row.itemDescription,
+        quantity: Number(row.quantity) || 0,
+        unit: row.unit,
+        rate: Number(row.rate) || 0,
+        salesValue: Number(row.salesValue) || 0,
+        inMeter: row.inMeter ? Number(row.inMeter) : null,
+        qtyMtr: row.qtyMtr ? Number(row.qtyMtr) : null,
+        meterUnit: row.meterUnit,
+      };
+
+      const existing = map.get(groupKey);
+      if (!existing) {
+        map.set(groupKey, {
+          ...row,
+          items: [itemDetail],
+          itemIds: [row.id],
+          totalQuantity: itemDetail.quantity,
+          totalSalesValue: itemDetail.salesValue,
+        });
+      } else {
+        existing.items!.push(itemDetail);
+        existing.itemIds!.push(row.id);
+        existing.totalQuantity = round2(
+          (existing.totalQuantity || 0) + itemDetail.quantity,
+        );
+        existing.totalSalesValue = round2(
+          (existing.totalSalesValue || 0) + itemDetail.salesValue,
+        );
+        if (row.billPhotoUrls && row.billPhotoUrls.length > 0) {
+          existing.billPhotoUrls = Array.from(
+            new Set([...existing.billPhotoUrls, ...row.billPhotoUrls]),
+          );
+        }
+      }
+    }
+
+    rowsToPaginate = Array.from(map.values()).map((inv) => {
+      if (inv.items && inv.items.length > 1) {
+        return {
+          ...inv,
+          quantity: inv.totalQuantity as unknown as typeof inv.quantity,
+          salesValue: inv.totalSalesValue as unknown as typeof inv.salesValue,
+          itemDescription: inv.items
+            .map((it) => `${it.itemDescription} (Qty: ${it.quantity})`)
+            .join(", "),
+        };
+      }
+      return inv;
+    });
+  }
+
+  const { slice, ...pageInfo } = paginate(rowsToPaginate, page, pageSize);
   const totals = sales.reduce(
     (acc, row) => {
       const val = Number(row.salesValue) || 0;

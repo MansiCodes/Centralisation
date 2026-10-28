@@ -1,4 +1,5 @@
 import { isBackdated, parseDateOnly } from "@/lib/dates";
+import { isSslPlant } from "@/lib/plant-layout";
 import { round2 } from "@/lib/pnl/excel-import/cells";
 import { purchaseSourceKey } from "@/lib/pnl/excel-import/dedupe";
 import type { ParsedPnlWorkbook } from "@/lib/pnl/excel-import/parse";
@@ -36,12 +37,14 @@ export async function persistPurchases(
     const day = parseDateOnly(row.date);
     const billRaw = row.billNumber?.trim() || "";
 
+    const isSsl = isSslPlant(familyKey);
     let existing = null;
     if (billRaw) {
       existing = await prisma.purchase.findFirst({
         where: {
           ...pScope,
           billNumber: { equals: billRaw, mode: "insensitive" },
+          ...(isSsl ? { date: day } : {}),
           ...(row.itemDescription?.trim()
             ? {
                 itemDescription: {
@@ -52,7 +55,7 @@ export async function persistPurchases(
             : {}),
         },
       });
-      if (!existing) {
+      if (!existing && !isSsl) {
         existing = await prisma.purchase.findFirst({
           where: {
             ...pScope,

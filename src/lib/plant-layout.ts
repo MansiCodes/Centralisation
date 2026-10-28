@@ -2,6 +2,12 @@ export function isCat6Plant(code: string | null | undefined): boolean {
   return code?.trim().toUpperCase() === "CAT6";
 }
 
+/** SL SSL Plant (canonical code SLSSL). */
+export function isSslPlant(code: string | null | undefined): boolean {
+  const c = code?.trim().toUpperCase();
+  return c === "SLSSL" || c === "SSL";
+}
+
 /** Quad + Signal merged plant (canonical code QUAD; legacy SIGNALLING still maps here). */
 export function isQuadSignalPlant(code: string | null | undefined): boolean {
   const c = code?.trim().toUpperCase();

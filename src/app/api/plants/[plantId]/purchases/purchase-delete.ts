@@ -9,6 +9,7 @@ import { writeAuditLog } from "@/lib/audit";
 import { safeRefreshDailyStatus } from "@/lib/daily-status";
 import { maybeRevokeCreditScore } from "@/lib/credit-score";
 import { prisma } from "@/lib/db";
+import { isSslPlant } from "@/lib/plant-layout";
 import type { RouteContext } from "./purchase-schemas";
 
 export async function DELETE(
@@ -33,15 +34,32 @@ export async function DELETE(
     return NextResponse.json({ error: "Missing id" }, { status: 400 });
   }
 
+  const plant = await prisma.plant.findUnique({
+    where: { id: plantId },
+    select: { code: true },
+  });
+  const isSsl = isSslPlant(plant?.code);
+
   const existing = await prisma.purchase.findFirst({
     where: { id, plantId },
-    select: { id: true, date: true, shift: true, enteredById: true },
+    select: { id: true, date: true, shift: true, enteredById: true, billNumber: true },
   });
   if (!existing) {
     return NextResponse.json({ error: "Purchase not found" }, { status: 404 });
   }
 
-  await prisma.purchase.delete({ where: { id } });
+  if (isSsl && existing.billNumber?.trim()) {
+    await prisma.purchase.deleteMany({
+      where: {
+        plantId,
+        date: existing.date,
+        billNumber: { equals: existing.billNumber.trim(), mode: "insensitive" },
+      },
+    });
+  } else {
+    await prisma.purchase.delete({ where: { id } });
+  }
+
   await writeAuditLog({
     entityType: "Purchase",
     entityId: id,

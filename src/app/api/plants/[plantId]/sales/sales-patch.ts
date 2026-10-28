@@ -11,6 +11,7 @@ import { safeWriteAuditLog } from "@/lib/audit";
 import { entryApprovalResetOnEdit } from "@/lib/entry-approval";
 import { isBackdated, parseDateOnly } from "@/lib/dates";
 import { prisma } from "@/lib/db";
+import { isSslPlant } from "@/lib/plant-layout";
 import { normalizeBillPhotoUrls } from "@/lib/cloudinary";
 import { saleSingleSchema, type RouteContext } from "./sale-schemas";
 
@@ -49,6 +50,12 @@ export async function PATCH(
     return NextResponse.json({ error: "Sale not found" }, { status: 404 });
   }
 
+  const plant = await prisma.plant.findUnique({
+    where: { id: plantId },
+    select: { code: true },
+  });
+  const isSsl = isSslPlant(plant?.code);
+
   const quantity = data.quantity ?? Number(existing.quantity);
   const rate = data.rate ?? Number(existing.rate);
   const dateStr = data.date ?? existing.date.toISOString().slice(0, 10);
@@ -60,6 +67,64 @@ export async function PATCH(
     data.billPhotoUrls !== undefined || data.billPhotoUrl !== undefined
       ? normalizeBillPhotoUrls(data.billPhotoUrls, data.billPhotoUrl)
       : null;
+
+  if (isSsl) {
+    const newBillRaw =
+      (data.billNumber !== undefined ? data.billNumber : existing.billNumber)?.trim() || "";
+    const newDay = data.date ? parseDateOnly(data.date) : existing.date;
+    if (newBillRaw) {
+      const duplicate = await prisma.sale.findFirst({
+        where: {
+          plantId,
+          date: newDay,
+          billNumber: { equals: newBillRaw, mode: "insensitive" },
+          NOT: existing.billNumber?.trim()
+            ? {
+                date: existing.date,
+                billNumber: { equals: existing.billNumber.trim(), mode: "insensitive" },
+              }
+            : { id: existing.id },
+        },
+        select: { id: true },
+      });
+      if (duplicate) {
+        return NextResponse.json(
+          {
+            error: `Sales invoice "${newBillRaw}" already exists on ${data.date || existing.date.toISOString().slice(0, 10)}. The same invoice number cannot be used for two separate Sales invoices on the same date.`,
+          },
+          { status: 400 },
+        );
+      }
+    }
+
+    if (existing.billNumber?.trim()) {
+      await prisma.sale.updateMany({
+        where: {
+          plantId,
+          date: existing.date,
+          billNumber: { equals: existing.billNumber.trim(), mode: "insensitive" },
+        },
+        data: {
+          date: data.date ? parseDateOnly(data.date) : undefined,
+          billDate:
+            data.billDate === undefined
+              ? undefined
+              : data.billDate
+                ? parseDateOnly(data.billDate)
+                : null,
+          customerName: data.customerName,
+          billNumber: data.billNumber,
+          notes: data.notes,
+          ...(photos
+            ? {
+                billPhotoUrl: photos.billPhotoUrl,
+                billPhotoUrls: photos.billPhotoUrls,
+              }
+            : {}),
+        },
+      });
+    }
+  }
 
   const sale = await prisma.sale.update({
     where: { id: existing.id },
@@ -99,11 +164,15 @@ export async function PATCH(
     entityType: "Sale",
     entityId: sale.id,
     field: "update",
-    oldValue: existing,
-    newValue: sale,
+    newValue: {
+      customerName: sale.customerName,
+      billNumber: sale.billNumber,
+      itemDescription: sale.itemDescription,
+      salesValue: Number(sale.salesValue),
+    },
     actorId: session.user.id,
     plantId,
-    isBackdated: sale.isBackdated,
+    isBackdated: isBackdated(dateStr),
   });
 
   return NextResponse.json({ sale });

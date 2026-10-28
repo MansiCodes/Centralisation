@@ -19,4 +19,15 @@ export type SaleRow = {
   approvedByHead?: boolean;
   approvedByAdmin?: boolean;
   approvalRequired?: boolean;
+  items?: Array<{
+    id?: string;
+    itemDescription: string;
+    quantity: string | number;
+    unit?: string;
+    rate?: string | number;
+    salesValue?: string | number;
+  }>;
+  itemIds?: string[];
+  totalQuantity?: number;
+  totalSalesValue?: number;
 };

@@ -6,13 +6,14 @@ import { formatINR } from "@/lib/format/inr";
 import { ReportTable, type ReportColumn } from "@/components/pnl/ReportTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { usePaginatedReport } from "@/components/pnl/usePaginatedReport";
-import { isCat6Plant, isQuadSignalPlant } from "@/lib/plant-layout";
+import { isCat6Plant, isQuadSignalPlant, isSslPlant } from "@/lib/plant-layout";
 import { ReportRowActions } from "@/components/pnl/ReportRowActions";
 import { toYmd } from "@/components/pnl/EntryEditDrawer";
 import { useReportCrud } from "@/components/pnl/useReportCrud";
 import { collectBillPhotoUrls } from "@/lib/bill-photos";
 import { buildCat6SalesColumns } from "@/components/pnl/sales-report/columns-cat6";
 import { buildPvcSalesColumns } from "@/components/pnl/sales-report/columns-pvc";
+import { buildSslSalesColumns } from "@/components/pnl/sales-report/columns-ssl";
 import { formatQty } from "@/components/pnl/sales-report/format";
 import { SalesEditDrawer } from "@/components/pnl/sales-report/edit";
 import type { SaleRow } from "@/components/pnl/sales-report/types";
@@ -87,12 +88,15 @@ export function SalesReport({
     ),
   };
 
+  const isSsl = isSslPlant(plantCode);
   const pvcColumns = buildPvcSalesColumns(page, pageSize);
   const cat6Columns = buildCat6SalesColumns(page, pageSize);
+  const sslColumns = buildSslSalesColumns(page, pageSize);
 
   const activeColumns = useMemo(() => {
+    if (isSsl) return sslColumns;
     return cat6 ? cat6Columns : pvcColumns;
-  }, [cat6, cat6Columns, pvcColumns]);
+  }, [cat6, isSsl, cat6Columns, pvcColumns, sslColumns]);
 
   return (
     <section className="pnl-report-panel">

@@ -8,6 +8,7 @@ export async function fetchDashboardAggregates(opts: {
   reportPlantIds: string[];
   todayDate: Date;
   periodStart: Date;
+  periodEnd: Date;
   weekStart: Date;
   previousStart: Date;
   previousEnd: Date;
@@ -18,6 +19,7 @@ export async function fetchDashboardAggregates(opts: {
     reportPlantIds,
     todayDate,
     periodStart,
+    periodEnd,
     previousStart,
     previousEnd,
   } = opts;
@@ -39,23 +41,23 @@ export async function fetchDashboardAggregates(opts: {
       _count: true,
     }),
     prisma.sale.aggregate({
-      where: { ...entryFilter, date: { gte: periodStart, lte: todayDate } },
+      where: { ...entryFilter, date: { gte: periodStart, lte: periodEnd } },
       _sum: { salesValue: true },
     }),
     prisma.purchase.aggregate({
-      where: { ...entryFilter, date: { gte: periodStart, lte: todayDate } },
+      where: { ...entryFilter, date: { gte: periodStart, lte: periodEnd } },
       _sum: { invoiceValue: true },
     }),
     prisma.pettyCashEntry.aggregate({
-      where: { ...entryFilter, date: { gte: periodStart, lte: todayDate } },
+      where: { ...entryFilter, date: { gte: periodStart, lte: periodEnd } },
       _sum: { amount: true, contractorSalary: true, supervisorSalary: true },
     }),
     prisma.manpowerEntry.aggregate({
-      where: { ...entryFilter, date: { gte: periodStart, lte: todayDate } },
+      where: { ...entryFilter, date: { gte: periodStart, lte: periodEnd } },
       _sum: { totalCost: true },
     }),
     prisma.stockEntry.aggregate({
-      where: { ...entryFilter, date: { gte: periodStart, lte: todayDate } },
+      where: { ...entryFilter, date: { gte: periodStart, lte: periodEnd } },
       _sum: { closingValue: true },
     }),
     typeof (prisma as { productionEntry?: { aggregate: typeof prisma.stockEntry.aggregate } })
@@ -70,18 +72,18 @@ export async function fetchDashboardAggregates(opts: {
             };
           }
         ).productionEntry.aggregate({
-          where: { ...entryFilter, date: { gte: periodStart, lte: todayDate } },
+          where: { ...entryFilter, date: { gte: periodStart, lte: periodEnd } },
           _sum: { quantity: true },
         })
       : Promise.resolve({ _sum: { quantity: 0 } }),
     prisma.sale.groupBy({
       by: ["date"],
-      where: { ...entryFilter, date: { gte: periodStart, lte: todayDate } },
+      where: { ...entryFilter, date: { gte: periodStart, lte: periodEnd } },
       _sum: { salesValue: true },
     }),
     prisma.purchase.groupBy({
       by: ["date"],
-      where: { ...entryFilter, date: { gte: periodStart, lte: todayDate } },
+      where: { ...entryFilter, date: { gte: periodStart, lte: periodEnd } },
       _sum: { invoiceValue: true },
     }),
     prisma.sale.aggregate({
@@ -99,7 +101,7 @@ export async function fetchDashboardAggregates(opts: {
       _sum: { invoiceValue: true },
     }),
     prisma.dailyEntryStatus.findMany({
-      where: { ...plantFilter, date: { gte: periodStart, lte: todayDate } },
+      where: { ...plantFilter, date: { gte: periodStart, lte: periodEnd } },
       select: {
         plantId: true,
         date: true,
@@ -139,7 +141,7 @@ export async function fetchDashboardAggregates(opts: {
             ),
           ),
           lte: new Date(
-            Date.UTC(todayDate.getUTCFullYear(), todayDate.getUTCMonth(), 1),
+            Date.UTC(periodEnd.getUTCFullYear(), periodEnd.getUTCMonth(), 1),
           ),
         },
       },

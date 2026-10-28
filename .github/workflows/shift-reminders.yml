@@ -7,23 +7,28 @@
 # Required GitHub repo secrets:
 #   APP_URL      e.g. https://main.d2zptt1fjuf5sk.amplifyapp.com
 #   CRON_SECRET  same value as the app env CRON_SECRET
+#
+# DISABLED — uncomment the `on:` block below to re-enable.
 
 name: Shift reminders
 
+# on:
+#   schedule:
+#     # Day: 08:50–08:54 IST = 03:20–03:24 UTC
+#     - cron: "20 3 * * *"
+#     - cron: "21 3 * * *"
+#     - cron: "22 3 * * *"
+#     - cron: "23 3 * * *"
+#     - cron: "24 3 * * *"
+#     # Night: 20:50–20:54 IST = 15:20–15:24 UTC
+#     - cron: "20 15 * * *"
+#     - cron: "21 15 * * *"
+#     - cron: "22 15 * * *"
+#     - cron: "23 15 * * *"
+#     - cron: "24 15 * * *"
+#   workflow_dispatch:
+
 on:
-  schedule:
-    # Day: 08:50–08:54 IST = 03:20–03:24 UTC
-    - cron: "20 3 * * *"
-    - cron: "21 3 * * *"
-    - cron: "22 3 * * *"
-    - cron: "23 3 * * *"
-    - cron: "24 3 * * *"
-    # Night: 20:50–20:54 IST = 15:20–15:24 UTC
-    - cron: "20 15 * * *"
-    - cron: "21 15 * * *"
-    - cron: "22 15 * * *"
-    - cron: "23 15 * * *"
-    - cron: "24 15 * * *"
   workflow_dispatch:
 
 jobs:
