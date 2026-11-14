@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { authConfig } from "@/auth.config";
 import { prisma } from "@/lib/db";
 import { normalizeIndiaPhoneInput } from "@/lib/phone";
+import { consumeSsoCode } from "@/lib/central/sso";
 
 function readCredential(value: unknown): string {
   if (Array.isArray(value)) return String(value[0] ?? "");
@@ -141,11 +142,34 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async (req) => {
           password: { label: "Password", type: "password" },
           phone: { label: "Phone", type: "text" },
           code: { label: "OTP Code", type: "text" },
+          ssoCode: { label: "SSO Code", type: "text" },
           rememberMe: { label: "Remember me", type: "text" },
         },
         async authorize(credentials) {
           try {
             const rememberFlag = readCredential(credentials?.rememberMe) === "1";
+            const ssoCode = readCredential(credentials?.ssoCode);
+            if (ssoCode) {
+              const claims = consumeSsoCode(ssoCode, "pnl");
+              if (!claims) return null;
+              const ssoUser = await prisma.user.findFirst({
+                where: { email: claims.email.toLowerCase(), isActive: true },
+              });
+              if (!ssoUser) return null;
+              return {
+                id: ssoUser.id,
+                email: ssoUser.email,
+                name: ssoUser.name,
+                globalRole: ssoUser.globalRole,
+                canViewPriceSheet: ssoUser.canViewPriceSheet,
+                canMachineSupervise: ssoUser.canMachineSupervise,
+                canAdminMachineProduction: ssoUser.canAdminMachineProduction,
+                canAccessStock: ssoUser.canAccessStock,
+                canManageUsers: ssoUser.canManageUsers,
+                rememberMe: true,
+              };
+            }
+
             const phone = readCredential(credentials?.phone);
             const code = readCredential(credentials?.code);
             if (phone && code) {

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { IconSearch } from "@/components/icons/AppIcons";
 import type { MachineCard } from "@/components/machine-production/ProductionEntryForm";
 import { CardGridLoadingSkeleton } from "@/components/loading/CoreLoadingSkeleton";
 import type { ShiftFilter } from "@/lib/machine-production/slots";
@@ -130,21 +131,7 @@ export function SupervisorDashboard() {
           </span>
 
           <div className="mp-search-box">
-            <svg
-              className="mp-search-icon"
-              viewBox="0 0 24 24"
-              width="15"
-              height="15"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
+            <IconSearch size={15} className="mp-search-icon" />
             <input
               type="text"
               className="mp-search-input"

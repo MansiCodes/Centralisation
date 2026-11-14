@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
+import { IconPlant } from "@/components/icons/AppIcons";
 import {
   selectPlantAction,
   viewAllPlantsAction,
@@ -92,19 +93,7 @@ export function PlantSwitcher({
           onClick={() => setOpen((v) => !v)}
         >
           <span className="dash-sidebar__icon">
-            <svg
-              viewBox="0 0 24 24"
-              width="20"
-              height="20"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M4 21V10l8-6 8 6v11M9 21v-6h6v6M4 10h16" />
-            </svg>
+            <IconPlant size={20} />
           </span>
           <span className="dash-sidebar__plant-meta">
             <span className="dash-sidebar__plant-label">{t("label")}</span>
@@ -125,19 +114,7 @@ export function PlantSwitcher({
           title={showLabels ? undefined : current?.name ?? t("label")}
         >
           <span className="dash-sidebar__icon">
-            <svg
-              viewBox="0 0 24 24"
-              width="20"
-              height="20"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M4 21V10l8-6 8 6v11M9 21v-6h6v6M4 10h16" />
-            </svg>
+            <IconPlant size={20} />
           </span>
           <span className="dash-sidebar__plant-meta">
             <span className="dash-sidebar__plant-label">{t("label")}</span>

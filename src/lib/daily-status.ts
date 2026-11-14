@@ -1,5 +1,6 @@
 import type { ManpowerShift } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { invalidatePlantPnlCache } from "@/lib/pnl/pnl-cache";
 import { allRequiredShiftFormsComplete } from "@/lib/shift-forms";
 
 function startOfUtcDay(date: Date): Date {
@@ -108,7 +109,10 @@ export async function safeRefreshDailyStatus(
   ...args: Parameters<typeof refreshDailyStatus>
 ) {
   try {
-    return await refreshDailyStatus(...args);
+    const result = await refreshDailyStatus(...args);
+    const plantId = args[0];
+    if (typeof plantId === "string") invalidatePlantPnlCache(plantId);
+    return result;
   } catch (err) {
     console.error("refreshDailyStatus failed", err);
   }

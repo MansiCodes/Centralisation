@@ -93,6 +93,8 @@ export async function POST(request: NextRequest) {
       rejectedByHead: false,
       rejectionReason: null,
     });
+    const { invalidatePlantPnlCache } = await import("@/lib/pnl/pnl-cache");
+    invalidatePlantPnlCache(plantId);
     return NextResponse.json({ success: true, entry: updated });
   }
 
@@ -103,6 +105,8 @@ export async function POST(request: NextRequest) {
       approvedByAdmin: false,
       rejectionReason: reason?.trim() || null,
     });
+    const { invalidatePlantPnlCache } = await import("@/lib/pnl/pnl-cache");
+    invalidatePlantPnlCache(plantId);
     return NextResponse.json({ success: true, entry: updated });
   }
 

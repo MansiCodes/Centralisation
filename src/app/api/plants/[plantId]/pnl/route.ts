@@ -9,11 +9,9 @@ import {
   parseDateOnly,
   todayDateString,
 } from "@/lib/dates";
-import {
-  calculatePlantPnlStatement,
-  earliestPlantActivityYmd,
-} from "@/lib/pnl/calculate";
-import { canViewFullPnl, seesOwnEntriesOnly, usesSuperAdminPnlScope } from "@/lib/rbac";
+import { earliestPlantActivityYmd } from "@/lib/pnl/calculate";
+import { getCachedPlantPnlStatement } from "@/lib/pnl/pnl-cache";
+import { canViewFullPnl, seesOwnEntriesOnly } from "@/lib/rbac";
 import { prisma } from "@/lib/db";
 
 type RouteContext = { params: Promise<{ plantId: string }> };
@@ -45,7 +43,7 @@ export async function GET(
   try {
     const ownEntriesOnly = seesOwnEntriesOnly(session.user.globalRole);
     const [pnl, plant] = await Promise.all([
-      calculatePlantPnlStatement(
+      getCachedPlantPnlStatement(
         plantId,
         parseDateOnly(fromStr),
         parseDateOnly(toStr),

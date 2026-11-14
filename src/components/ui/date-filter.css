@@ -293,9 +293,195 @@
   align-self: center;
 }
 
-/* Approvals page: keep date filter flush with top content */
+/* Approvals page */
+.approvals-page {
+  padding: 0.75rem 1.5rem 2rem;
+  box-sizing: border-box;
+}
+
 .approvals-page .pnl-date-filter {
   margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.approvals-panel {
+  margin-top: 0.5rem !important;
+  padding: 0.9rem 1.1rem !important;
+}
+
+.approvals-panel__title {
+  margin: 0 0 0.55rem;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 650;
+  color: var(--stone, #1f2937);
+}
+
+.approvals-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.approvals-tab {
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #374151;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.approvals-tab.is-active {
+  border-color: #0f766e;
+  background: #f0fdfa;
+  color: #0f766e;
+  font-weight: 600;
+}
+
+.approvals-empty {
+  margin: 0;
+  padding: 1.25rem 0;
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.approvals-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.approvals-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.approvals-table th,
+.approvals-table td {
+  padding: 0.55rem 0.45rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.approvals-table thead tr {
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.approvals-table tbody tr {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.approvals-table__shift {
+  text-transform: capitalize;
+}
+
+.approvals-table__label {
+  font-weight: 500;
+}
+
+.approvals-table__detail {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.approvals-table__remark {
+  font-size: 0.8rem;
+  color: #0f766e;
+  margin-top: 0.2rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.approvals-table__actions {
+  text-align: right;
+}
+
+.approvals-actions {
+  display: flex;
+  gap: 0.35rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.approvals-actions__btn {
+  padding: 0.3rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  border: none;
+  border-radius: 0.35rem;
+  cursor: pointer;
+}
+
+.approvals-actions__btn--ok {
+  background: #10b981;
+}
+
+.approvals-actions__btn--bad {
+  background: #ef4444;
+}
+
+.approvals-actions__btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+@media (max-width: 880px) {
+  /* dash-main already pads sides — don’t double-indent */
+  .approvals-page {
+    padding: 0 0 1.25rem;
+  }
+
+  .approvals-page .pnl-date-filter {
+    margin-bottom: 0.35rem;
+  }
+
+  .approvals-panel {
+    margin-top: 0.35rem !important;
+    padding: 0.65rem 0.7rem !important;
+  }
+
+  .approvals-panel__title {
+    margin-bottom: 0.4rem;
+    font-size: 0.98rem;
+  }
+
+  .approvals-tabs {
+    gap: 0.28rem;
+    margin-bottom: 0.55rem;
+  }
+
+  .approvals-tab {
+    padding: 0.22rem 0.5rem;
+    font-size: 0.72rem;
+  }
+
+  .approvals-table {
+    font-size: 0.8rem;
+  }
+
+  .approvals-table th,
+  .approvals-table td {
+    padding: 0.4rem 0.3rem;
+  }
+
+  .approvals-actions__btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  .approvals-empty {
+    padding: 0.85rem 0;
+    font-size: 0.85rem;
+  }
 }
 
 @media (max-width: 560px) {
@@ -306,7 +492,7 @@
   .approvals-page .pnl-date-filter {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
+    gap: 0.4rem;
   }
 
   .approvals-page .pnl-date-filter__field {
@@ -317,5 +503,19 @@
   .approvals-page .pnl-date-filter__field input[type="date"] {
     width: 100%;
     min-width: 0;
+  }
+
+  .approvals-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.25rem;
+  }
+
+  .approvals-tab {
+    padding: 0.28rem 0.2rem;
+    font-size: 0.68rem;
+    text-align: center;
+    white-space: normal;
+    line-height: 1.15;
   }
 }

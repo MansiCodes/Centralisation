@@ -4,6 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useMemo } from "react";
+import {
+  IconCalendar,
+  IconMenu,
+  IconPlus,
+  IconSidebar,
+} from "@/components/icons/AppIcons";
 import { LogoutButton } from "@/components/LogoutButton";
 import { LanguageSwitcher } from "@/components/shell/LanguageSwitcher";
 import { todayLocalISO } from "@/lib/client-forms";
@@ -15,35 +21,16 @@ import { localeToBcp47, type AppLocale } from "@/i18n/config";
 import { findActiveNavItem, type NavSection } from "./nav-config";
 
 function MenuIcon({ collapsed }: { collapsed: boolean }) {
-  if (collapsed) {
-    return (
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-        <path d="M4 7h16M4 12h10M4 17h16" />
-      </svg>
-    );
-  }
-  return (
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-      <path d="M4 7h16M4 12h16M4 17h16" />
-    </svg>
-  );
+  if (collapsed) return <IconSidebar size={22} />;
+  return <IconMenu size={22} />;
 }
 
 function CalendarIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="3" y="5" width="18" height="16" rx="2" />
-      <path d="M8 3v4M16 3v4M3 11h18" />
-    </svg>
-  );
+  return <IconCalendar size={16} />;
 }
 
 function PlusIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
-      <path d="M12 5v14M5 12h14" />
-    </svg>
-  );
+  return <IconPlus size={16} />;
 }
 
 function formatHeaderDate(iso: string, withYear: boolean, locale: AppLocale): string {
@@ -67,6 +54,7 @@ type AppHeaderProps = {
   sidebarCollapsed: boolean;
   onMenuClick: () => void;
   canEnter?: boolean;
+  showAppsHome?: boolean;
 };
 
 export function AppHeader({
@@ -74,6 +62,7 @@ export function AppHeader({
   sidebarCollapsed,
   onMenuClick,
   canEnter = false,
+  showAppsHome = false,
 }: AppHeaderProps) {
   const pathname = usePathname();
   const t = useTranslations("common");
@@ -173,6 +162,16 @@ export function AppHeader({
         </div>
       ) : null}
 
+      {showAppsHome ? (
+        <Link
+          href="/apps"
+          className="dash-header__logout dash-header__apps"
+          title="All apps"
+          style={{ textDecoration: "none" }}
+        >
+          Apps
+        </Link>
+      ) : null}
       <LanguageSwitcher compact />
       <LogoutButton />
     </header>

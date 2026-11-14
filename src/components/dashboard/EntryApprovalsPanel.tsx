@@ -5,6 +5,7 @@ import { EntryApproveRejectGroup } from "@/components/dashboard/EntryApproveReje
 import { Pagination } from "@/components/ui/Pagination";
 import { localeToBcp47, type AppLocale } from "@/i18n/config";
 import type { EntryApprovalKind } from "@/lib/entry-approval-types";
+import "@/components/ui/date-filter.css";
 
 export type PendingEntryRow = {
   id: string;
@@ -16,7 +17,6 @@ export type PendingEntryRow = {
   enteredByName: string | null;
   label: string;
   detail: string;
-  /** Form remark / note entered with the row (visible to approvers). */
   remark?: string | null;
   amount: number;
 };
@@ -45,6 +45,66 @@ function formatINR(amount: number): string {
     currency: "INR",
     minimumFractionDigits: 2,
   }).format(amount);
+}
+
+function ApprovalsTabs({
+  tab,
+  counts,
+  onChange,
+}: {
+  tab: EntryApprovalKind;
+  counts: { key: EntryApprovalKind; label: string; count: number }[];
+  onChange: (key: EntryApprovalKind) => void;
+}) {
+  return (
+    <div className="approvals-tabs" role="tablist" aria-label="Approval types">
+      {counts.map((t) => (
+        <button
+          key={t.key}
+          type="button"
+          role="tab"
+          aria-selected={tab === t.key}
+          className={`approvals-tab${tab === t.key ? " is-active" : ""}`}
+          onClick={() => onChange(t.key)}
+        >
+          {t.label}
+          {t.count > 0 ? ` (${t.count})` : ""}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ApprovalsRow({
+  row,
+  locale,
+}: {
+  row: PendingEntryRow;
+  locale: AppLocale;
+}) {
+  return (
+    <tr>
+      <td>{formatDay(row.date, locale)}</td>
+      <td className="approvals-table__shift">{row.shift.toLowerCase()}</td>
+      <td>{row.plantName}</td>
+      <td>{row.enteredByName ?? "—"}</td>
+      <td>
+        <div className="approvals-table__label">{row.label}</div>
+        {row.detail ? (
+          <div className="approvals-table__detail">{row.detail}</div>
+        ) : null}
+        {row.remark?.trim() ? (
+          <div className="approvals-table__remark">
+            Note: {row.remark.trim()}
+          </div>
+        ) : null}
+      </td>
+      <td>{formatINR(row.amount)}</td>
+      <td className="approvals-table__actions">
+        <EntryApproveRejectGroup entryId={row.id} kind={row.kind} />
+      </td>
+    </tr>
+  );
 }
 
 export function EntryApprovalsPanel({
@@ -78,104 +138,36 @@ export function EntryApprovalsPanel({
   }, [tab]);
 
   return (
-    <section className="mis-panel" style={{ marginTop: "0.85rem", padding: "1.25rem" }}>
-      <h2 className="section-label" style={{ marginBottom: "1rem" }}>
-        Approvals
-      </h2>
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "0.5rem",
-          marginBottom: "1rem",
+    <section className="mis-panel approvals-panel">
+      <h2 className="approvals-panel__title">Approvals</h2>
+      <ApprovalsTabs
+        tab={tab}
+        counts={counts}
+        onChange={(key) => {
+          setTab(key);
+          setPage(1);
         }}
-      >
-        {counts.map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            onClick={() => {
-              setTab(t.key);
-              setPage(1);
-            }}
-            style={{
-              padding: "0.45rem 0.9rem",
-              borderRadius: "999px",
-              border: tab === t.key ? "1px solid #0f766e" : "1px solid #e5e7eb",
-              background: tab === t.key ? "#f0fdfa" : "#fff",
-              color: tab === t.key ? "#0f766e" : "#374151",
-              fontWeight: tab === t.key ? 600 : 500,
-              cursor: "pointer",
-            }}
-          >
-            {t.label}
-            {t.count > 0 ? ` (${t.count})` : ""}
-          </button>
-        ))}
-      </div>
+      />
 
       {filtered.length === 0 ? (
-        <p className="mp-muted" style={{ margin: 0, textAlign: "center", padding: "2rem 0" }}>
-          No pending {tab} entries.
-        </p>
+        <p className="approvals-empty">No pending {tab} entries.</p>
       ) : (
-        <div style={{ overflowX: "auto" }}>
-          <table
-            className="approvals-table"
-            style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}
-          >
+        <div className="approvals-table-wrap">
+          <table className="approvals-table">
             <thead>
-              <tr style={{ borderBottom: "2px solid #e5e7eb", textAlign: "left" }}>
-                <th style={{ padding: "0.5rem" }}>Date</th>
-                <th style={{ padding: "0.5rem" }}>Shift</th>
-                <th style={{ padding: "0.5rem" }}>Plant</th>
-                <th style={{ padding: "0.5rem" }}>Entered by</th>
-                <th style={{ padding: "0.5rem" }}>Details</th>
-                <th style={{ padding: "0.5rem" }}>Amount</th>
-                <th style={{ padding: "0.5rem", textAlign: "right" }}>Action</th>
+              <tr>
+                <th>Date</th>
+                <th>Shift</th>
+                <th>Plant</th>
+                <th>Entered by</th>
+                <th>Details</th>
+                <th>Amount</th>
+                <th className="approvals-table__actions">Action</th>
               </tr>
             </thead>
             <tbody>
               {paged.map((row) => (
-                <tr key={row.id} style={{ borderBottom: "1px solid #f3f4f6" }}>
-                  <td style={{ padding: "0.75rem 0.5rem" }}>
-                    {formatDay(row.date, locale)}
-                  </td>
-                  <td style={{ padding: "0.75rem 0.5rem", textTransform: "capitalize" }}>
-                    {row.shift.toLowerCase()}
-                  </td>
-                  <td style={{ padding: "0.75rem 0.5rem" }}>{row.plantName}</td>
-                  <td style={{ padding: "0.75rem 0.5rem" }}>
-                    {row.enteredByName ?? "—"}
-                  </td>
-                  <td style={{ padding: "0.75rem 0.5rem" }}>
-                    <div style={{ fontWeight: 500 }}>{row.label}</div>
-                    {row.detail ? (
-                      <div style={{ fontSize: "0.8rem", color: "#6b7280" }}>
-                        {row.detail}
-                      </div>
-                    ) : null}
-                    {row.remark?.trim() ? (
-                      <div
-                        style={{
-                          fontSize: "0.8rem",
-                          color: "#0f766e",
-                          marginTop: "0.2rem",
-                          whiteSpace: "pre-wrap",
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        Note: {row.remark.trim()}
-                      </div>
-                    ) : null}
-                  </td>
-                  <td style={{ padding: "0.75rem 0.5rem" }}>
-                    {formatINR(row.amount)}
-                  </td>
-                  <td style={{ padding: "0.75rem 0.5rem", textAlign: "right" }}>
-                    <EntryApproveRejectGroup entryId={row.id} kind={row.kind} />
-                  </td>
-                </tr>
+                <ApprovalsRow key={row.id} row={row} locale={locale} />
               ))}
             </tbody>
           </table>

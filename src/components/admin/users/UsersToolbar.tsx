@@ -2,6 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import {
+  IconDownload,
+  IconFilter,
+  IconPlus,
+  IconSearch,
+} from "@/components/icons/AppIcons";
 import { ROLE_LABEL, ROLES } from "./types";
 
 type UsersToolbarProps = {
@@ -15,29 +21,15 @@ type UsersToolbarProps = {
 };
 
 function PlusIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
-      <path d="M12 5v14M5 12h14" />
-    </svg>
-  );
+  return <IconPlus size={18} />;
 }
 
 function FilterIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <path d="M4 6h16M7 12h10M10 18h4" />
-    </svg>
-  );
+  return <IconFilter size={18} />;
 }
 
 function ExportIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <path d="M12 3v12" />
-      <path d="m7 10 5 5 5-5" />
-      <path d="M5 19h14" />
-    </svg>
-  );
+  return <IconDownload size={18} />;
 }
 
 export function UsersToolbar({
@@ -69,10 +61,7 @@ export function UsersToolbar({
       <label className="users-toolbar__search">
         <span className="users-sr-only">Search users</span>
         <span className="users-toolbar__search-icon" aria-hidden>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="7" />
-            <path d="m20 20-3.5-3.5" />
-          </svg>
+          <IconSearch size={16} />
         </span>
         <input
           type="search"

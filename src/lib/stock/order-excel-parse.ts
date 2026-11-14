@@ -1,159 +1,10 @@
 import ExcelJS from "exceljs";
-import {
-  asUtcDate,
-  cellVal,
-  normHeader,
-  num,
-  str,
-} from "@/lib/pnl/excel-import/cells";
-import {
-  orderKey,
-  type ParseStockOrdersResult,
-  type StockOrderBySize,
-  type StockOrderPartyLine,
-} from "@/lib/stock/order-excel-types";
+import { cellVal, normHeader, num } from "@/lib/pnl/excel-import/cells";
+import type { ParseStockOrdersResult } from "@/lib/stock/order-excel-types";
+import { findCol, findDoneCol } from "./order-excel-columns";
+import { cellStr, formatDelivery } from "./order-excel-delivery";
 import { matchCableAndSize, qtyToKm } from "./order-excel-match";
-
-function parseDeliveryDateToken(s: string): string | null {
-  const dmy = s.match(/^(\d{1,2})[./\-](\d{1,2})[./\-](\d{2,4})$/);
-  if (!dmy) return null;
-  const day = Number(dmy[1]);
-  const month = Number(dmy[2]);
-  let year = Number(dmy[3]);
-  if (year < 100) year += 2000;
-  if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
-    return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-  }
-  return null;
-}
-
-function cleanDeliveryText(raw: string): string {
-  return raw
-    .replace(/^(comm(ercial)?|del(ivery)?(\s*period)?|due)\s*[:\-–]\s*/i, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function formatDelivery(v: unknown): string | null {
-  const d = asUtcDate(v);
-  if (d) return d.toISOString().slice(0, 10);
-  let s = str(v);
-  if (!s || /^loa$/i.test(s)) return null;
-  s = cleanDeliveryText(s);
-  if (!s || /^loa$/i.test(s)) return null;
-  const exact = parseDeliveryDateToken(s);
-  if (exact) return exact;
-  // e.g. "Comm : 01.04.2026" leftovers / trailing notes — take first date token
-  const embedded = s.match(/(\d{1,2})[./\-](\d{1,2})[./\-](\d{2,4})/);
-  if (embedded) {
-    const parsed = parseDeliveryDateToken(embedded[0]);
-    if (parsed) return parsed;
-  }
-  return s || null;
-}
-
-function findCol(
-  map: Map<string, number>,
-  aliases: string[],
-): number | undefined {
-  for (const a of aliases) {
-    const hit = map.get(a);
-    if (hit != null) return hit;
-  }
-  for (const [h, idx] of map) {
-    for (const a of aliases) {
-      if (h === a || h.includes(a) || a.includes(h)) return idx;
-    }
-  }
-  return undefined;
-}
-
-/** Exact Done/Supplied header only — not "dated" (contains "done"). */
-function findDoneCol(map: Map<string, number>): number | undefined {
-  const exact = [
-    "done",
-    "done qty",
-    "qty done",
-    "supplied",
-    "supplied qty",
-    "qty supplied",
-    "offered",
-    "offered qty",
-    "ready qty",
-    "executed",
-    "executed qty",
-    "call putup",
-    "call put up",
-  ];
-  for (const a of exact) {
-    const hit = map.get(a);
-    if (hit != null) return hit;
-  }
-  for (const [h, idx] of map) {
-    if (h === "dated" || h === "date") continue;
-    if (/\bdone\b/.test(h) || /\bsupplied\b/.test(h)) return idx;
-  }
-  return undefined;
-}
-
-function isCarryParty(raw: string): boolean {
-  const t = raw.trim().toLowerCase();
-  if (!t || t === "—" || t === "-") return true;
-  const n = t.replace(/[.\s'"-]/g, "");
-  return n === "do" || n === "ditto" || n === "same";
-}
-
-function cellStr(
-  row: { getCell: (col: number) => unknown },
-  col: number,
-): string {
-  const cell = row.getCell(col) as {
-    master?: Parameters<typeof cellVal>[0];
-  } & Parameters<typeof cellVal>[0];
-  return str(cellVal(cell.master ?? cell));
-}
-
-function isJunkRow(size: string, party: string): boolean {
-  const blob = `${size} ${party}`.toLowerCase();
-  return (
-    !size.trim() ||
-    blob.includes("total pending") ||
-    blob.includes("crore") ||
-    /^loa$/i.test(size.trim())
-  );
-}
-
-function addLine(
-  byKey: Record<string, StockOrderBySize>,
-  matched: { cable: string; size: string },
-  line: StockOrderPartyLine,
-) {
-  const key = orderKey(matched.cable, matched.size);
-  const existing = byKey[key];
-  if (!existing) {
-    byKey[key] = {
-      cable: matched.cable,
-      size: matched.size,
-      totalQty: line.qty,
-      parties: [line],
-    };
-    return;
-  }
-  existing.totalQty =
-    Math.round((existing.totalQty + line.qty) * 10000) / 10000;
-  // Merge same party name into one line (sum qty, keep deliveries)
-  const same = existing.parties.find(
-    (p) =>
-      p.partyName.toLowerCase() === line.partyName.toLowerCase() &&
-      (p.deliveryPeriod ?? "") === (line.deliveryPeriod ?? ""),
-  );
-  if (same) {
-    same.qty = Math.round((same.qty + line.qty) * 10000) / 10000;
-    same.done = Math.round((same.done + line.done) * 10000) / 10000;
-  } else {
-    existing.parties.push(line);
-  }
-}
+import { addLine, isCarryParty, isJunkRow } from "./order-excel-row-helpers";
 
 export async function parseStockOrdersExcel(
   buffer: ArrayBuffer | Buffer,
@@ -161,7 +12,7 @@ export async function parseStockOrdersExcel(
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.load(buffer as never);
 
-  const byKey: Record<string, StockOrderBySize> = {};
+  const byKey: Record<string, import("@/lib/stock/order-excel-types").StockOrderBySize> = {};
   const unmatched = new Set<string>();
   let matchedRows = 0;
   let skippedRows = 0;
@@ -172,7 +23,6 @@ export async function parseStockOrdersExcel(
       continue;
     }
 
-    // Find header row in first 12 rows
     let headerRow = 0;
     let colMap = new Map<string, number>();
     for (let r = 1; r <= Math.min(12, sheet.rowCount || 12); r++) {

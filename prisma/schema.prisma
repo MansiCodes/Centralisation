@@ -67,6 +67,8 @@ model User {
   email              String           @unique
   name               String?
   passwordHash       String?
+  /// Centralisation / portal avatar (HTTPS or data URL)
+  avatarUrl          String?
   phone              String?
   globalRole         GlobalRole       @default(ACCOUNTANT)
   canViewPriceSheet  Boolean          @default(false)

@@ -16,6 +16,10 @@ import { PvcExpenseRegisterReport } from "@/components/pnl/PvcExpenseRegisterRep
 import { ContactListReport } from "@/components/pnl/ContactListReport";
 import { useReportRange } from "@/components/pnl/useReportRange";
 import type { ReportTab } from "@/components/pnl/types";
+import {
+  invalidatePlantApis,
+  listenPlantEntrySaved,
+} from "@/lib/client/apiSwr";
 import "@/components/pnl/pnl-reports.css";
 
 export function PnlReportsShell({
@@ -60,17 +64,17 @@ export function PnlReportsShell({
   }, [allowedTabs, tab, accountantLimited]);
 
   useEffect(() => {
-    function onEntrySaved(e: Event) {
-      const detail = (e as CustomEvent)?.detail;
-      if (!detail || !detail.plantId || detail.plantId === plantId) {
-        setReloadKey((k) => k + 1);
-      }
-    }
-    window.addEventListener("cj:today-entry-saved", onEntrySaved);
-    return () => {
-      window.removeEventListener("cj:today-entry-saved", onEntrySaved);
-    };
+    return listenPlantEntrySaved((savedPlantId) => {
+      if (savedPlantId && savedPlantId !== plantId) return;
+      void invalidatePlantApis(plantId);
+      setReloadKey((k) => k + 1);
+    });
   }, [plantId]);
+
+  function bumpReports() {
+    void invalidatePlantApis(plantId);
+    setReloadKey((k) => k + 1);
+  }
 
   const allowImport = canImport;
 
@@ -97,7 +101,7 @@ export function PnlReportsShell({
             plantId={plantId}
             canImport={allowImport}
             salesPurchaseOnly={accountantLimited}
-            onImported={() => setReloadKey((k) => k + 1)}
+            onImported={bumpReports}
           />
         </div>
         <div className="pnl-reports__header-export">

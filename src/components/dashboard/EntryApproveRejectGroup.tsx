@@ -49,38 +49,20 @@ export function EntryApproveRejectGroup({
   };
 
   return (
-    <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+    <div className="approvals-actions">
       <button
         type="button"
+        className="approvals-actions__btn approvals-actions__btn--ok"
         disabled={pending}
         onClick={() => handleAction("approve_head")}
-        style={{
-          padding: "0.35rem 0.75rem",
-          fontSize: "0.8rem",
-          fontWeight: 600,
-          color: "#ffffff",
-          backgroundColor: "#10b981",
-          border: "none",
-          borderRadius: "0.375rem",
-          cursor: "pointer",
-        }}
       >
         {pending ? "..." : "Approve"}
       </button>
       <button
         type="button"
+        className="approvals-actions__btn approvals-actions__btn--bad"
         disabled={pending}
         onClick={() => setShowRejectModal(true)}
-        style={{
-          padding: "0.35rem 0.75rem",
-          fontSize: "0.8rem",
-          fontWeight: 600,
-          color: "#ffffff",
-          backgroundColor: "#ef4444",
-          border: "none",
-          borderRadius: "0.375rem",
-          cursor: "pointer",
-        }}
       >
         Reject
       </button>

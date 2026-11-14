@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  IconDownload,
+  IconFilter,
+  IconSearch,
+} from "@/components/icons/AppIcons";
 import { SelectMenu } from "@/components/ui/SelectMenu";
 
 type AuditToolbarProps = {
@@ -19,21 +24,11 @@ type AuditToolbarProps = {
 };
 
 function FilterIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <path d="M4 6h16M7 12h10M10 18h4" />
-    </svg>
-  );
+  return <IconFilter size={18} />;
 }
 
 function ExportIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <path d="M12 3v12" />
-      <path d="m7 10 5 5 5-5" />
-      <path d="M5 19h14" />
-    </svg>
-  );
+  return <IconDownload size={18} />;
 }
 
 function isInsideAuditFilter(target: EventTarget | null, root: HTMLElement | null): boolean {
@@ -69,10 +64,7 @@ export function AuditToolbar(props: AuditToolbarProps) {
       <label className="audit-toolbar__search">
         <span className="audit-sr-only">Search audit</span>
         <span className="audit-toolbar__search-icon" aria-hidden>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="7" />
-            <path d="m20 20-3.5-3.5" />
-          </svg>
+          <IconSearch size={16} />
         </span>
         <input
           type="search"

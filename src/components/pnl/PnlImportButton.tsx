@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { IconFileDownload, IconFileUpload } from "@/components/icons/AppIcons";
 
 type ImportSummary = {
   batchId: string;
@@ -176,21 +177,7 @@ export function PnlImportButton({
             : "Download Excel template (Sales, Purchase, Expense, Stock, Electricity, Rent, FAR)"
         }
       >
-        <svg
-          viewBox="0 0 24 24"
-          width="14"
-          height="14"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden
-        >
-          <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z" />
-          <path d="M14 3v5h5" />
-          <path d="M12 12v6M9 15l3 3 3-3" />
-        </svg>
+        <IconFileDownload size={14} />
         <span className="pnl-export-btn__label">
           {downloading ? "…" : "Template"}
         </span>
@@ -206,21 +193,7 @@ export function PnlImportButton({
             : "Import Sales, Purchase, Stock, Expense, FAR from one Excel file"
         }
       >
-        <svg
-          viewBox="0 0 24 24"
-          width="14"
-          height="14"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden
-        >
-          <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z" />
-          <path d="M14 3v5h5" />
-          <path d="M12 18v-6M9 15l3-3 3 3" />
-        </svg>
+        <IconFileUpload size={14} />
         <span className="pnl-export-btn__label">
           {busy ? "Importing…" : "Import Excel"}
         </span>

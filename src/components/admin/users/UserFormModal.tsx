@@ -2,6 +2,7 @@
 
 import { useId } from "react";
 import { useTranslations } from "next-intl";
+import { IconUserEdit, IconUserPlus } from "@/components/icons/AppIcons";
 import { Button } from "@/components/ui/Button";
 import { UserFormModalFields } from "./UserFormModalFields";
 import type { UserFormModalProps } from "./user-form-modal-model";
@@ -57,18 +58,9 @@ export function UserFormModal({
           </h2>
           <div className="users-modal__hero-icon" aria-hidden="true">
             {form.editingId ? (
-              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z" />
-                <path d="M4 20a8 8 0 0 1 10.5-7.6" />
-                <path d="M15.5 15.5 21 21" />
-                <path d="m17.2 20.2 2.6-2.6a1.5 1.5 0 0 0 0-2.1l-.1-.1a1.5 1.5 0 0 0-2.1 0L15 18.5v2.1Z" />
-              </svg>
+              <IconUserEdit size={28} />
             ) : (
-              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z" />
-                <path d="M4 20a8 8 0 0 1 12.5-6.6" />
-                <path d="M19 8v6M16 11h6" />
-              </svg>
+              <IconUserPlus size={28} />
             )}
           </div>
           <button

@@ -9,7 +9,10 @@ import {
   useState,
   type KeyboardEvent,
 } from "react";
-import { createPortal } from "react-dom";
+import {
+  MachineMultiSelectMenu,
+  type MenuPos,
+} from "./MachineMultiSelectMenu";
 
 export type MachineOption = {
   id: string;
@@ -27,14 +30,6 @@ type MachineMultiSelectProps = {
   placeholder?: string;
   searchPlaceholder?: string;
   onChange: (machineIds: string[]) => void;
-};
-
-type MenuPos = {
-  top: number;
-  left: number;
-  width: number;
-  maxHeight: number;
-  openUp: boolean;
 };
 
 export function MachineMultiSelect({
@@ -161,75 +156,6 @@ export function MachineMultiSelect({
 
   const triggerId = `${fieldId}-trigger`;
 
-  const menu =
-    mounted && open && pos
-      ? createPortal(
-          <div
-            ref={listRef}
-            className="select-menu__list mp-machine-multi__list"
-            role="listbox"
-            aria-multiselectable="true"
-            id={`${fieldId}-listbox`}
-            aria-labelledby={triggerId}
-            style={{
-              position: "fixed",
-              left: pos.left,
-              width: pos.width,
-              maxHeight: pos.maxHeight,
-              top: pos.openUp ? undefined : pos.top,
-              bottom: pos.openUp ? window.innerHeight - pos.top : undefined,
-              zIndex: 200,
-            }}
-          >
-            <div className="mp-machine-multi__search">
-              <input
-                ref={searchRef}
-                type="search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder={searchPlaceholder}
-                aria-label={searchPlaceholder}
-                onKeyDown={(e) => e.stopPropagation()}
-              />
-            </div>
-            {filteredMachines.length === 0 ? (
-              <p className="mp-machine-multi__empty mp-muted">
-                {machines.length === 0
-                  ? "No machines yet — add them on the Machines tab first."
-                  : "No machines match your search."}
-              </p>
-            ) : (
-              filteredMachines.map((machine) => {
-                const selected = value.includes(machine.id);
-                return (
-                  <label
-                    key={machine.id}
-                    className={`mp-machine-multi__option${selected ? " is-selected" : ""}`}
-                    role="option"
-                    aria-selected={selected}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selected}
-                      disabled={disabled}
-                      onChange={() => toggleMachine(machine.id)}
-                    />
-                    <span>
-                      {machine.name}
-                      <span className="mp-muted"> · {machine.code}</span>
-                      {!machine.isActive ? (
-                        <span className="mp-muted"> (inactive)</span>
-                      ) : null}
-                    </span>
-                  </label>
-                );
-              })
-            )}
-          </div>,
-          document.body,
-        )
-      : null;
-
   return (
     <div
       ref={rootRef}
@@ -266,7 +192,23 @@ export function MachineMultiSelect({
           ▾
         </span>
       </button>
-      {menu}
+      {mounted && open && pos ? (
+        <MachineMultiSelectMenu
+          fieldId={fieldId}
+          triggerId={triggerId}
+          listRef={listRef}
+          searchRef={searchRef}
+          pos={pos}
+          search={search}
+          setSearch={setSearch}
+          searchPlaceholder={searchPlaceholder}
+          filteredMachines={filteredMachines}
+          machines={machines}
+          value={value}
+          disabled={disabled}
+          onToggle={toggleMachine}
+        />
+      ) : null}
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { SESSION_COOKIE } from "@/auth.config";
+import { CENTRAL_APP_COOKIE } from "@/lib/central/app-session";
 import {
   defaultLocale,
   isAppLocale,
@@ -89,9 +90,6 @@ export default async function middleware(req: NextRequest) {
   }
 
   const { pathname } = req.nextUrl;
-  if (isPublicPath(pathname)) {
-    return res;
-  }
 
   const token = await getToken({
     req,
@@ -100,12 +98,28 @@ export default async function middleware(req: NextRequest) {
     salt: SESSION_COOKIE,
   });
 
+  // Visiting the app chooser clears the "inside P&L today" stamp.
+  if (pathname.startsWith("/apps") && req.cookies.get(CENTRAL_APP_COOKIE)?.value) {
+    expireCookie(res, CENTRAL_APP_COOKIE);
+  }
+
+  if (isPublicPath(pathname)) {
+    // Already signed in → portal chooser (multi-app) or single-app redirect from /apps.
+    if (token && pathname.startsWith("/login")) {
+      return NextResponse.redirect(new URL("/apps", req.url));
+    }
+    return res;
+  }
+
   if (!token) {
     if (pathname.startsWith("/api/")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const login = new URL("/login", req.url);
-    login.searchParams.set("callbackUrl", pathname);
+    // Don't bounce multi-app users straight into last P&L deep-link after login.
+    if (pathname !== "/" && !pathname.startsWith("/apps")) {
+      login.searchParams.set("callbackUrl", pathname);
+    }
     return NextResponse.redirect(login);
   }
 

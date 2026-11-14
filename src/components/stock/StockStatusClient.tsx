@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { todayDateString } from "@/lib/dates";
 import {
@@ -51,7 +51,6 @@ export function StockStatusClient({
   const router = useRouter();
   const today = todayDateString();
   const isToday = date === today;
-  const dateInputRef = useRef<HTMLInputElement>(null);
   const emptyLabel = isToday
     ? "No data for today"
     : `No data for ${formatDisplayDate(date)}`;
@@ -171,16 +170,6 @@ export function StockStatusClient({
     router.push(qs ? `/stock?${qs}` : "/stock");
   }
 
-  function openCalendar() {
-    const el = dateInputRef.current;
-    if (!el) return;
-    try {
-      el.showPicker?.();
-    } catch {
-      el.focus();
-    }
-  }
-
   return (
     <div className={`stock-status-page${orders.hasOrders ? " has-orders" : ""}`}>
       <StockStatusToolbar
@@ -188,13 +177,11 @@ export function StockStatusClient({
         date={date}
         today={today}
         isToday={isToday}
-        dateInputRef={dateInputRef}
         ordersFileRef={orders.ordersFileRef}
         ordersFileName={orders.ordersFileName}
         ordersUploading={orders.ordersUploading}
         onSetTab={setTab}
         onSetDate={setDate}
-        onOpenCalendar={openCalendar}
         onOrdersExcelSelected={(file) => void orders.onOrdersExcelSelected(file)}
         onClearOrders={orders.clearOrders}
       />

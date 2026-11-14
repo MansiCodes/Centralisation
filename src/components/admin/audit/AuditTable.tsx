@@ -1,5 +1,6 @@
 "use client";
 
+import { IconAudit } from "@/components/icons/AppIcons";
 import { Pagination } from "@/components/ui/Pagination";
 import {
   auditActionLabel,
@@ -28,10 +29,7 @@ function EmptyState({
   return (
     <div className="audit-empty">
       <div className="audit-empty__icon" aria-hidden>
-        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.8">
-          <path d="M8 3h8l4 4v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" />
-          <path d="M8 9h8M8 13h8M8 17h5" />
-        </svg>
+        <IconAudit size={28} />
       </div>
       <h3>{hasFilters ? "No matching audit entries" : "No audit trail yet"}</h3>
       <p>

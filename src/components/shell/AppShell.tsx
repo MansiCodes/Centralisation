@@ -24,6 +24,7 @@ type AppShellProps = {
   currentPlantId?: string | null;
   allowAllPlants?: boolean;
   entryPlant?: EntryPlant | null;
+  showAppsHome?: boolean;
 };
 
 export function AppShell({
@@ -35,6 +36,7 @@ export function AppShell({
   currentPlantId = null,
   allowAllPlants = false,
   entryPlant = null,
+  showAppsHome = false,
 }: AppShellProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -47,6 +49,17 @@ export function AppShell({
       // ignore
     }
     setReady(true);
+  }, []);
+
+  // Mobile drawer flag stays true after DevTools width flip; clear it on desktop.
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 880px)");
+    function onViewportChange() {
+      if (!mq.matches) setMobileOpen(false);
+    }
+    onViewportChange();
+    mq.addEventListener("change", onViewportChange);
+    return () => mq.removeEventListener("change", onViewportChange);
   }, []);
 
   const persistCollapsed = useCallback((next: boolean) => {
@@ -84,6 +97,7 @@ export function AppShell({
         sidebarCollapsed={collapsed}
         onMenuClick={onHeaderMenu}
         canEnter={canEnter}
+        showAppsHome={showAppsHome}
       />
       <div className="dash-body">
         <AppSidebar

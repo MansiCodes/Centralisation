@@ -1,9 +1,10 @@
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
 import { AppShell } from "@/components/shell/AppShell";
+import { accessCount, resolveCentralAccess } from "@/lib/central/access";
+import { CENTRAL_APP_COOKIE, isPnlChosenToday } from "@/lib/central/app-session";
 import { prisma } from "@/lib/db";
 import {
-  getAccessiblePlantIds,
   canAccessMachineProduction,
   canAdminMachineProduction,
   canApproveEntries,
@@ -19,8 +20,13 @@ import {
   isSuperAdmin,
 } from "@/lib/rbac";
 import { resolveSelectedPlantId } from "@/lib/selected-plant";
-import { getPlantRmSummary, getPlantSegment, getPlantDisplayName, isLegacyMergedPlantCode } from "@/lib/plant-segments";
 import { isQuadSignalPlant } from "@/lib/plant-layout";
+import { machineSupervisorShell } from "./app-layout-ms-shell";
+import {
+  getLayoutRepairedPlantIds,
+  getLayoutSession,
+  getLayoutSwitchablePlants,
+} from "./app-layout-data";
 
 export const dynamic = "force-dynamic";
 
@@ -29,11 +35,23 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
+  const session = await getLayoutSession();
   if (!session?.user) {
     redirect("/login");
   }
-  // Fresh flags from DB — JWT can lag after Extra access edits until re-login.
+
+  const portalAccess = resolveCentralAccess({
+    email: session.user.email,
+    globalRole: session.user.globalRole,
+  });
+  const multiAppPortal = accessCount(portalAccess) > 1;
+  if (multiAppPortal) {
+    const jar = await cookies();
+    if (!isPnlChosenToday(jar.get(CENTRAL_APP_COOKIE)?.value)) {
+      redirect("/apps");
+    }
+  }
+
   const dbUser = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: {
@@ -63,88 +81,32 @@ export default async function AppLayout({
     email: dbUser.email ?? session.user.email,
   };
   const role = user.globalRole;
-  const superAdmin = role ? isSuperAdmin(role) : false;
   const globalPlantAccess = role ? hasGlobalPlantAccess(role) : false;
 
-  // Dedicated Machine Supervisors skip plant-scoped shell chrome.
-  // Plant Manager / Accountant hybrids keep the plant shell + Machine Production.
   const mpOpts = {
     canMachineSupervise: Boolean(user.canMachineSupervise),
     canAdminMachineProduction: Boolean(user.canAdminMachineProduction),
   };
   const mpAdmin = role ? canAdminMachineProduction(role, mpOpts) : false;
-  // Pure Machine Supervisors without Stock extra keep the slim MS shell.
-  // With Stock extra they use the plant shell (Stock page + Today's Entry stock).
   if (role && isMachineSupervisorOnly(role) && !user.canAccessStock) {
-    return (
-      <AppShell
-        navFlags={{
-          showPnl: false,
-          showPriceSheet: false,
-          showMachineProduction: true,
-          isMachineSupervisor: true,
-          showAdmin: false,
-          showUsers: false,
-          showApprovals: false,
-          showStock: false,
-          showSuper: false,
-          showMpAdmin: mpAdmin,
-          isManager: false,
-          primaryPlantId: null,
-          showSwitchPlant: false,
-          selectedPlantName: null,
-        }}
-        user={{
-          name: user.name ?? null,
-          email: user.email ?? "",
-          role: user.globalRole,
-          canAccessStock: false,
-        }}
-        canEnter={false}
-        plants={[]}
-        currentPlantId={null}
-        allowAllPlants={false}
-      >
-        {children}
-      </AppShell>
-    );
+    return machineSupervisorShell(children, {
+      user: {
+        name: user.name ?? null,
+        email: user.email ?? "",
+        globalRole: String(user.globalRole),
+      },
+      mpAdmin,
+      multiAppPortal,
+    });
   }
 
-  const plantIdsRaw = user ? await getAccessiblePlantIds(user.id) : [];
-  // Machine Supervisor + Stock must have Quad plant assignment; repair empty roles.
-  let plantIds = plantIdsRaw;
-  if (
-    role &&
-    isMachineSupervisorOnly(role) &&
-    user.canAccessStock &&
-    plantIds.length === 0
-  ) {
-    const quad = await prisma.plant.findFirst({
-      where: {
-        isActive: true,
-        OR: [
-          { code: { equals: "QUAD", mode: "insensitive" } },
-          { code: { equals: "QUADSIGNAL", mode: "insensitive" } },
-          { code: { equals: "SIGNALLING", mode: "insensitive" } },
-        ],
-      },
-      select: { id: true },
-    });
-    if (quad) {
-      await prisma.userPlantRole.upsert({
-        where: {
-          userId_plantId: { userId: user.id, plantId: quad.id },
-        },
-        create: {
-          userId: user.id,
-          plantId: quad.id,
-          role: user.globalRole,
-        },
-        update: {},
-      });
-      plantIds = [quad.id];
-    }
-  }
+  const plantIds = user
+    ? await getLayoutRepairedPlantIds(
+        user.id,
+        role ?? null,
+        Boolean(user.canAccessStock),
+      )
+    : [];
   const selectedPlantId = user
     ? await resolveSelectedPlantId(user.id, {
         hasGlobalPlantAccess: globalPlantAccess,
@@ -152,41 +114,22 @@ export default async function AppLayout({
     : null;
   const primaryPlantId = selectedPlantId ?? plantIds[0] ?? null;
 
-  const switchablePlantsRaw =
-    user && (plantIds.length >= 1 || globalPlantAccess)
-      ? await prisma.plant.findMany({
-          where: {
-            ...(globalPlantAccess
-              ? { isActive: true }
-              : { id: { in: plantIds }, isActive: true }),
-          },
-          select: { id: true, name: true, code: true },
-        })
-      : [];
+  const switchablePlants = await getLayoutSwitchablePlants(
+    plantIds,
+    globalPlantAccess,
+  );
 
-  const switchablePlants = switchablePlantsRaw
-    .filter((p) => !isLegacyMergedPlantCode(p.code))
-    .map((p) => ({
-      ...p,
-      name: getPlantDisplayName(p.code, p.name),
-      rmSummary: getPlantRmSummary(p.code),
-      sortOrder: getPlantSegment(p.code)?.sortOrder ?? 99,
-    }))
-    .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name));
-
-  const selectedPlantRaw =
-    selectedPlantId && user
-      ? await prisma.plant.findUnique({
-          where: { id: selectedPlantId },
-          select: { id: true, name: true, code: true },
-        })
-      : null;
-  const selectedPlant = selectedPlantRaw
+  const selectedFromList = selectedPlantId
+    ? switchablePlants.find((p) => p.id === selectedPlantId)
+    : null;
+  const selectedPlant = selectedFromList
     ? {
-        ...selectedPlantRaw,
-        name: getPlantDisplayName(selectedPlantRaw.code, selectedPlantRaw.name),
+        id: selectedFromList.id,
+        name: selectedFromList.name,
+        code: selectedFromList.code,
       }
     : null;
+  const selectedPlantRaw = selectedPlant;
 
   const showPnl =
     role && !isMachineSupervisorOnly(role) ? canViewPnl(role) : false;
@@ -248,6 +191,7 @@ export default async function AppLayout({
       currentPlantId={selectedPlantId}
       allowAllPlants={false}
       entryPlant={selectedPlant}
+      showAppsHome={multiAppPortal}
     >
       {children}
     </AppShell>

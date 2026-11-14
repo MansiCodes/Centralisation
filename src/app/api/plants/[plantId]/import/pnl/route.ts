@@ -216,5 +216,8 @@ export async function POST(
     isBackdated: false,
   });
 
+  const { invalidatePlantPnlCache } = await import("@/lib/pnl/pnl-cache");
+  invalidatePlantPnlCache(plantId);
+
   return NextResponse.json({ ok: true, summary });
 }

@@ -836,6 +836,11 @@ textarea {
     font-size: 0.78rem;
   }
 
+  /* Mobile: no Apps shortcut — use device back to multi-app home */
+  .dash-header__apps {
+    display: none !important;
+  }
+
   /* Phone only: language moves into the menu. Tablet keeps Eng/हि in the navbar. */
   /* (lang-switch hide is in a tighter breakpoint below) */
 

@@ -1,9 +1,28 @@
-/* Cable Junction — login landing (page-scoped) */
+/* Cable Junction — login landing (page-scoped Valuecon gold/brown) */
 
 .login-screen {
   min-height: 100dvh;
   display: flex;
   overflow-x: hidden;
+  /* Scope brand tokens so login matches Workspace without rewriting whole P&L. */
+  --bg: #f6f0e4;
+  --bg-elevated: #fffdf8;
+  --border: #e2d3be;
+  --border-strong: #d4a34e;
+  --fg: #241404;
+  --fg-muted: #6e4d27;
+  --stone: #7d511e;
+  --teal: #d4a34e;
+  --teal-soft: #fae2b4;
+  --teal-ink: #241404;
+  --teal-fill: linear-gradient(135deg, #e5b85c 0%, #d4a34e 50%, #b8863b 100%);
+  --teal-fill-hover: linear-gradient(135deg, #f2c76d 0%, #dfb059 50%, #c79544 100%);
+  --teal-fill-shadow: inset 0 1px 0 rgb(255 255 255 / 28%);
+  --teal-active-text: #241404;
+  --focus-ring: #d4a34e;
+  --shadow: 0 12px 32px rgba(36, 20, 4, 0.14);
+  color: var(--fg);
+  background: var(--bg);
 }
 
 /* ---------- Left: animated brand atmosphere ---------- */
@@ -17,10 +36,10 @@
   overflow: hidden;
   padding: 4rem 4.5rem;
   background:
-    radial-gradient(56% 56% at 8% 6%, rgba(45, 212, 191, 0.4) 0%, transparent 62%),
-    radial-gradient(52% 52% at 94% 14%, rgba(251, 113, 133, 0.32) 0%, transparent 62%),
-    radial-gradient(58% 58% at 78% 96%, rgba(245, 158, 11, 0.36) 0%, transparent 62%),
-    #fffaf0;
+    radial-gradient(56% 56% at 8% 6%, rgba(229, 184, 92, 0.45) 0%, transparent 62%),
+    radial-gradient(52% 52% at 94% 14%, rgba(86, 51, 16, 0.28) 0%, transparent 62%),
+    radial-gradient(58% 58% at 78% 96%, rgba(201, 152, 70, 0.4) 0%, transparent 62%),
+    linear-gradient(160deg, #fffdf8 0%, #faf0df 45%, #f2e7d5 100%);
 }
 
 .login-visual__blob {
@@ -32,21 +51,21 @@
   will-change: transform;
 }
 
-.login-visual__blob--teal {
+.login-visual__blob--gold {
   top: -8%;
   left: -6%;
   width: 20rem;
   height: 20rem;
-  background: radial-gradient(circle, #2dd4bf 0%, rgba(45, 212, 191, 0) 70%);
+  background: radial-gradient(circle, #e5b85c 0%, rgba(229, 184, 92, 0) 70%);
   animation: floatDriftA 16s ease-in-out infinite;
 }
 
-.login-visual__blob--coral {
+.login-visual__blob--brown {
   bottom: -10%;
   right: -4%;
   width: 18rem;
   height: 18rem;
-  background: radial-gradient(circle, #fb7185 0%, rgba(251, 113, 133, 0) 70%);
+  background: radial-gradient(circle, #7d511e 0%, rgba(125, 81, 30, 0) 70%);
   animation: floatDriftB 13s ease-in-out infinite;
 }
 
@@ -55,7 +74,7 @@
   left: 60%;
   width: 15rem;
   height: 15rem;
-  background: radial-gradient(circle, #fbbf24 0%, rgba(251, 191, 36, 0) 70%);
+  background: radial-gradient(circle, #fae2b4 0%, rgba(250, 226, 180, 0) 70%);
   animation: floatDriftC 19s ease-in-out infinite;
 }
 
@@ -133,7 +152,7 @@
   font-size: clamp(2.9rem, 5.4vw, 5rem);
   line-height: 0.98;
   letter-spacing: -0.03em;
-  background: linear-gradient(100deg, #0f766e 0%, #fb7185 55%, #d97706 100%);
+  background: linear-gradient(100deg, #201204 0%, #563310 40%, #d4a34e 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -144,7 +163,7 @@
   max-width: 26ch;
   font-size: clamp(1rem, 1.4vw, 1.2rem);
   font-weight: 500;
-  color: #44403c;
+  color: #6e4d27;
 }
 
 /* ---------- Right: login form panel ---------- */
@@ -198,7 +217,7 @@
   flex: 1;
   min-height: 42px;
   border: 1px solid var(--border);
-  background: #f7f8f6;
+  background: #fdf7eb;
   color: var(--fg-muted);
   font: inherit;
   font-size: 0.82rem;
@@ -216,8 +235,8 @@
 
 .login-mode-tabs button.is-active {
   background: var(--teal-fill);
-  border-color: var(--teal);
-  color: #fff;
+  border-color: #b8863b;
+  color: #241404;
   box-shadow: var(--teal-fill-shadow);
 }
 
@@ -324,7 +343,7 @@
 
 .login-password__toggle:hover:not(:disabled) {
   color: var(--teal-ink);
-  background: rgb(18 114 105 / 8%);
+  background: rgb(212 163 78 / 16%);
 }
 
 .login-password__toggle:disabled {
@@ -419,11 +438,11 @@
 @keyframes fadePulse {
   0%, 100% {
     opacity: 0.75;
-    filter: drop-shadow(0 0 0 rgba(251, 113, 133, 0.55));
+    filter: drop-shadow(0 0 0 rgba(212, 163, 78, 0.45));
   }
   50% {
     opacity: 1;
-    filter: drop-shadow(0 0 12px rgba(251, 113, 133, 0.8));
+    filter: drop-shadow(0 0 12px rgba(229, 184, 92, 0.85));
   }
 }
 

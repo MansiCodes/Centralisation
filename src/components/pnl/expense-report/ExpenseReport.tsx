@@ -8,17 +8,15 @@ import { usePaginatedReport } from "@/components/pnl/usePaginatedReport";
 import { isCat6Plant, isQuadSignalPlant } from "@/lib/plant-layout";
 import {
   getExpenseHeadsForSection,
-  getUpcastMiscQueryHeads,
   normalizePvcExpenseHead,
   usesExpenseSections,
   type PvcExpenseSection,
 } from "@/lib/plant-catalogs";
+import { buildExpenseReportUrl } from "@/components/pnl/expense-report/expense-report-url";
 import { ReportRowActions } from "@/components/pnl/ReportRowActions";
-import { toYmd } from "@/components/pnl/EntryEditDrawer";
 import { useReportCrud } from "@/components/pnl/useReportCrud";
-import { collectBillPhotoUrls } from "@/lib/bill-photos";
 import { FixedAssetsReport } from "@/components/pnl/FixedAssetsReport";
-import { electricityUnitsKwh } from "@/lib/electricity-readings";
+import { openExpenseRowEdit } from "@/components/pnl/expense-report/expense-report-edit-open";
 import { buildExpenseColumns } from "@/components/pnl/expense-report/columns";
 import { ExpenseSectionNav } from "@/components/pnl/expense-report/nav";
 import {
@@ -68,31 +66,17 @@ export function ExpenseReport({
   const isUpcastPowerCategory =
     upcast && isElectricityExpenseHead(category);
 
-  const baseUrl = isPettyCategory
-    ? `/api/plants/${plantId}/petty-cash?entryType=PETTY_CASH` +
-      `&from=${encodeURIComponent(from)}` +
-      `&to=${encodeURIComponent(to)}`
-    : isUpcastMiscCategory
-      ? `/api/plants/${plantId}/petty-cash?` +
-        `from=${encodeURIComponent(from)}` +
-        `&to=${encodeURIComponent(to)}` +
-        `&expenseHeads=${encodeURIComponent(
-          getUpcastMiscQueryHeads(section).join(","),
-        )}`
-      : isUpcastPowerCategory
-      ? `/api/plants/${plantId}/petty-cash?` +
-        `from=${encodeURIComponent(from)}` +
-        `&to=${encodeURIComponent(to)}` +
-        `&expenseHeads=${encodeURIComponent("Fuel & Power,Electricity")}`
-      : upcast
-      ? `/api/plants/${plantId}/petty-cash?` +
-        `from=${encodeURIComponent(from)}` +
-        `&to=${encodeURIComponent(to)}` +
-        `&expenseHead=${encodeURIComponent(category)}`
-      : `/api/plants/${plantId}/petty-cash?entryType=EXPENSE` +
-        `&from=${encodeURIComponent(from)}` +
-        `&to=${encodeURIComponent(to)}` +
-        `&expenseHead=${encodeURIComponent(category)}`;
+  const baseUrl = buildExpenseReportUrl({
+    plantId,
+    from,
+    to,
+    isPettyCategory,
+    isUpcastMiscCategory,
+    isUpcastPowerCategory,
+    upcast,
+    category,
+    section,
+  });
   const { rows, page, pageSize, total, loading, error, response, reload, setPage, setPageSize } =
     usePaginatedReport<ExpenseRow>(baseUrl, t("failedExpenses"), undefined, {
       enabled: !isFarCategory,
@@ -175,55 +159,7 @@ export function ExpenseReport({
                       compact: true,
                       render: (r) => (
                         <ReportRowActions
-                          onEdit={() => {
-                            const ymd = toYmd(r.date);
-                            const opening =
-                              r.openingReading == null
-                                ? ""
-                                : String(r.openingReading);
-                            const closing =
-                              r.closingReading == null
-                                ? ""
-                                : String(r.closingReading);
-                            const amountNum = Number(r.amount ?? 0);
-                            const units = electricityUnitsKwh(
-                              opening,
-                              closing,
-                            );
-                            const rate =
-                              units != null && units > 0 && amountNum > 0
-                                ? String(
-                                    Math.round((amountNum / units) * 10000) /
-                                      10000,
-                                  )
-                                : "";
-                            crud.openEdit(
-                              r,
-                              {
-                                date: ymd,
-                                month: ymd.slice(0, 7),
-                                expenseHead: r.expenseHead ?? "",
-                                expenseName: r.expenseName ?? "",
-                                description: r.description ?? "",
-                                amount: String(r.amount ?? ""),
-                                rate,
-                                contractorSalary: String(
-                                  r.contractorSalary ?? "0",
-                                ),
-                                supervisorSalary: String(
-                                  r.supervisorSalary ?? "0",
-                                ),
-                                payMode: r.payMode ?? "Cash",
-                                nature: r.nature ?? "",
-                                location: r.location ?? "",
-                                billNumber: r.billNumber ?? "",
-                                openingReading: opening,
-                                closingReading: closing,
-                                shift: r.shift ?? "DAY",
-                              },
-                              collectBillPhotoUrls(r),
-                            );
-                          }}
+                          onEdit={() => openExpenseRowEdit(crud, r)}
                           onDelete={() => void crud.remove(r.id)}
                         />
                       ),
