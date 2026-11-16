@@ -31,8 +31,10 @@
   --header-h: 60px;
   --sidebar-w: 248px;
   --sidebar-w-collapsed: 76px;
-  --font-display: var(--font-fraunces), Georgia, serif;
-  --font-body: var(--font-jakarta), system-ui, sans-serif;
+  --font-fraunces: "Fraunces", Georgia, serif;
+  --font-jakarta: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-display: var(--font-fraunces);
+  --font-body: var(--font-jakarta);
 }
 
 @theme inline {
