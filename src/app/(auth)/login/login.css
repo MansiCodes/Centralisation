@@ -189,10 +189,23 @@
   position: relative;
 }
 
+.login-form-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.login-form-card__intro {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
 .login-form-card__lang {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
+  position: static;
+  flex-shrink: 0;
+  padding-top: 0.2rem;
 }
 
 .login-form-card h2 {
@@ -204,7 +217,7 @@
 
 .login-form-card .lead {
   color: var(--fg-muted);
-  margin: 0 0 1.25rem;
+  margin: 0;
 }
 
 .login-mode-tabs {
@@ -534,17 +547,13 @@
     background: transparent;
   }
 
-  .login-form-card__lang {
-    top: 0.65rem;
-    right: 0;
+  .login-form-card__top {
+    margin-bottom: 0.85rem;
   }
 
   .login-form-card h2 {
     font-size: 1.55rem;
-  }
-
-  .login-form-card .lead {
-    margin-bottom: 0.85rem;
+    padding-right: 0;
   }
 
   .login-mode-tabs {

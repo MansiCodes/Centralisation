@@ -66,11 +66,15 @@ export function LoginForm() {
   return (
     <section className="login-form-panel">
       <div className="login-form-card">
-        <div className="login-form-card__lang">
-          <LanguageSwitcher />
+        <div className="login-form-card__top">
+          <div className="login-form-card__intro">
+            <h2>{t("welcomeBack")}</h2>
+            <p className="lead">{t("signInLead")}</p>
+          </div>
+          <div className="login-form-card__lang">
+            <LanguageSwitcher />
+          </div>
         </div>
-        <h2>{t("welcomeBack")}</h2>
-        <p className="lead">{t("signInLead")}</p>
 
         <div className="login-mode-tabs" role="tablist" aria-label={t("title")}>
           <button

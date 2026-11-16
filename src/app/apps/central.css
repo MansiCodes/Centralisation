@@ -24,7 +24,8 @@ body:has(.central-shell) {
   --c-panel: #fdf7eb;
   --c-card-border: #e2d3be;
   --c-sidebar: linear-gradient(180deg, #201204 0%, #341d08 25%, #563310 50%, #82521b 72%, #b57f2f 88%, #d4a34e 100%);
-  --c-header: linear-gradient(90deg, #e5b85c 0%, #c99846 15%, #8c591d 45%, #543310 70%, #2a1705 100%);
+  /* 60% gold → 40% deep brown */
+  --c-header: linear-gradient(90deg, #e5b85c 0%, #d4a34e 60%, #563310 60%, #241404 100%);
   --c-btn: linear-gradient(135deg, #e5b85c 0%, #d4a34e 50%, #b8863b 100%);
   --c-btn-hover: linear-gradient(135deg, #f2c76d 0%, #dfb059 50%, #c79544 100%);
   --c-active-pill: linear-gradient(90deg, #fae2b4 0%, #e5b85c 25%, #c99846 60%, #7d511e 85%, #38200a 100%);
