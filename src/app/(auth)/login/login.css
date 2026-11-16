@@ -408,6 +408,32 @@
   font-size: 1rem;
 }
 
+/* Darker CTA than the soft gold fill — clear rest vs hover. */
+.login-screen .login-submit.btn-primary {
+  background: linear-gradient(135deg, #6b4010 0%, #4a2c0a 100%);
+  color: #fff;
+  border-color: #3d2408;
+  box-shadow: 0 8px 20px rgba(36, 20, 4, 0.28);
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.login-screen .login-submit.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #e5b85c 0%, #d4a34e 55%, #b8863b 100%);
+  color: #241404;
+  border-color: #b8863b;
+  box-shadow: 0 10px 24px rgba(212, 163, 78, 0.35);
+}
+
+.login-screen .login-submit.btn-primary:active:not(:disabled) {
+  background: #3d2408;
+  color: #fff;
+  border-color: #2a1805;
+}
+
 /* ---------- Keyframes ---------- */
 
 @keyframes floatDriftA {
@@ -454,38 +480,75 @@
 /* ---------- Responsive: stack on mobile ---------- */
 
 @media (max-width: 880px) {
+  /* Match .dash-main mobile horizontal padding (1.1rem). Lock to viewport. */
   .login-screen {
     flex-direction: column;
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
   }
 
   .login-visual {
     flex: 0 0 auto;
-    min-height: 240px;
-    height: 36vh;
-    padding: 2.25rem 1.75rem;
+    min-height: 0;
+    height: auto;
+    max-height: 26dvh;
+    padding: 1.15rem 1.1rem 0.85rem;
     align-items: flex-end;
   }
 
   .login-visual__content {
-    padding-bottom: 0.25rem;
+    padding-bottom: 0;
   }
 
   .login-visual__brand {
-    font-size: clamp(2.1rem, 9vw, 2.75rem);
+    font-size: clamp(1.85rem, 7.5vw, 2.35rem);
   }
 
   .login-visual__tagline {
-    font-size: 0.95rem;
-    max-width: 32ch;
+    margin-top: 0.45rem;
+    font-size: 0.88rem;
+    max-width: 28ch;
   }
 
   .login-form-panel {
-    flex: 1;
-    padding: 1.5rem 1.25rem 2.5rem;
+    flex: 1 1 auto;
+    min-height: 0;
+    align-items: stretch;
+    justify-content: flex-start;
+    overflow: hidden;
+    padding: 0.75rem 1.1rem calc(0.85rem + env(safe-area-inset-bottom));
   }
 
   .login-form-card {
-    padding: 1.85rem 1.5rem;
+    max-width: none;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 1.15rem 0 0.85rem;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  .login-form-card__lang {
+    top: 0.65rem;
+    right: 0;
+  }
+
+  .login-form-card h2 {
+    font-size: 1.55rem;
+  }
+
+  .login-form-card .lead {
+    margin-bottom: 0.85rem;
+  }
+
+  .login-mode-tabs {
+    margin-bottom: 0.85rem;
   }
 }
 
