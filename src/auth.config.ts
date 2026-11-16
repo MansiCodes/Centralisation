@@ -7,9 +7,16 @@ export const SESSION_COOKIE = "cj.session-token.v4";
  * Edge-compatible Auth.js config used by middleware.
  * Keep this free of Node-only imports (Prisma, bcrypt, etc.).
  */
+const authPublicUrl =
+  process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? "";
+const useHttpsCookies = authPublicUrl.startsWith("https://");
+
 export const authConfig = {
   secret: process.env.AUTH_SECRET,
   trustHost: true,
+  // Auth.js defaults this to true in production, which breaks HTTP IP deploys
+  // (__Secure- cookies are dropped by the browser on http://).
+  useSecureCookies: useHttpsCookies,
   pages: {
     signIn: "/login",
   },
@@ -31,7 +38,7 @@ export const authConfig = {
         httpOnly: true,
         sameSite: "lax" as const,
         path: "/",
-        secure: process.env.NODE_ENV === "production",
+        secure: useHttpsCookies,
         // Do not set maxAge here — auth.ts sets persistent vs session cookie.
       },
     },

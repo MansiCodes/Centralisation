@@ -55,7 +55,9 @@ function ensureLocaleCookie(req: NextRequest, res: NextResponse) {
     path: "/",
     sameSite: "lax",
     maxAge: 60 * 60 * 24 * 365,
-    secure: process.env.NODE_ENV === "production",
+    secure: (process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? "").startsWith(
+      "https://",
+    ),
   });
 }
 
