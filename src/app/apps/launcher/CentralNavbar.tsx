@@ -43,7 +43,12 @@ export function CentralNavbar({
         </button>
       ) : null}
       <button type="button" className="central-navbar__brand" onClick={onGoHome}>
-        <span>Valuecon</span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/brand/valuecon.png"
+          alt="Valuecon"
+          className="central-navbar__brand-logo"
+        />
       </button>
       <div className="central-navbar__spacer" />
       <div className="central-navbar__user" ref={menuRef}>

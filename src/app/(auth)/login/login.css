@@ -229,7 +229,9 @@
 .login-mode-tabs button {
   flex: 1;
   min-height: 42px;
-  border: 1px solid var(--border);
+  border: 1px solid #e8d9c4;
+  outline: none;
+  box-shadow: none;
   background: #fdf7eb;
   color: var(--fg-muted);
   font: inherit;
@@ -241,14 +243,17 @@
   transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
 }
 
-.login-mode-tabs button:hover:not(.is-active) {
-  border-color: var(--teal);
+.login-mode-tabs button:hover:not(.is-active),
+.login-mode-tabs button:focus-visible:not(.is-active) {
+  border-color: #d4a34e;
   color: var(--teal-ink);
+  outline: none;
+  box-shadow: none;
 }
 
 .login-mode-tabs button.is-active {
   background: var(--teal-fill);
-  border-color: #b8863b;
+  border-color: #c99846;
   color: #241404;
   box-shadow: var(--teal-fill-shadow);
 }
@@ -421,12 +426,14 @@
   font-size: 1rem;
 }
 
-/* Darker CTA than the soft gold fill — clear rest vs hover. */
+/* Gold linear-gradient CTA; hover shifts to deeper brown-gold. */
 .login-screen .login-submit.btn-primary {
-  background: linear-gradient(135deg, #6b4010 0%, #4a2c0a 100%);
-  color: #fff;
-  border-color: #3d2408;
-  box-shadow: 0 8px 20px rgba(36, 20, 4, 0.28);
+  background: linear-gradient(135deg, #e5b85c 0%, #d4a34e 50%, #b8863b 100%);
+  color: #241404;
+  border-color: #c99846;
+  box-shadow:
+    0 10px 24px rgba(212, 163, 78, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
   transition:
     background 0.18s ease,
     color 0.18s ease,
@@ -435,16 +442,16 @@
 }
 
 .login-screen .login-submit.btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #e5b85c 0%, #d4a34e 55%, #b8863b 100%);
-  color: #241404;
+  background: linear-gradient(135deg, #f2c76d 0%, #c99846 45%, #8c591d 100%);
+  color: #201204;
   border-color: #b8863b;
-  box-shadow: 0 10px 24px rgba(212, 163, 78, 0.35);
+  box-shadow: 0 12px 28px rgba(140, 89, 29, 0.35);
 }
 
 .login-screen .login-submit.btn-primary:active:not(:disabled) {
-  background: #3d2408;
+  background: linear-gradient(135deg, #d4a34e 0%, #8c591d 100%);
   color: #fff;
-  border-color: #2a1805;
+  border-color: #6b4010;
 }
 
 /* ---------- Keyframes ---------- */
@@ -535,16 +542,18 @@
 
   .login-form-card {
     max-width: none;
-    height: 100%;
+    height: auto;
     max-height: 100%;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    padding: 1.15rem 0 0.85rem;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-    background: transparent;
+    padding: 1.15rem 1.1rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--bg-elevated);
+    box-shadow:
+      0 14px 36px rgba(212, 163, 78, 0.28),
+      0 4px 14px rgba(36, 20, 4, 0.1);
   }
 
   .login-form-card__top {

@@ -1,0 +1,46 @@
+# Auto-deploy P&L / Centralisation to the EC2 box after push to main.
+# Required repo secrets (Settings → Secrets → Actions):
+#   EC2_HOST          e.g. 13.201.19.145
+#   EC2_USER          e.g. ubuntu
+#   EC2_SSH_KEY       full private key PEM contents
+#   EC2_APP_DIR       e.g. /var/www/pnl  (optional; defaults below)
+
+name: Deploy P&L to EC2
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-pnl-ec2
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          command_timeout: 40m
+          script: |
+            set -euo pipefail
+            APP_DIR="${{ secrets.EC2_APP_DIR }}"
+            APP_DIR="${APP_DIR:-/var/www/pnl}"
+            cd "$APP_DIR"
+            git fetch origin main
+            git reset --hard origin/main
+            export NODE_OPTIONS=--max-old-space-size=1536
+            npm ci || npm install
+            npx prisma generate
+            npm run build
+            pm2 delete pnl || true
+            pm2 start npm --name pnl -- start
+            pm2 save
+            echo "Deploy OK $(git rev-parse --short HEAD)"
