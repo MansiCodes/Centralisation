@@ -151,7 +151,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async (req) => {
             const ssoCode = readCredential(credentials?.ssoCode);
             if (ssoCode) {
               const claims = consumeSsoCode(ssoCode, "pnl");
-              if (!claims) return null;
+              if (!claims) {
+                console.warn("[authorize SSO] invalid or mismatched SSO code (check SSO_SECRET match)");
+                return null;
+              }
               const { ensureSsoPnlUser } = await import("@/lib/central/ensure-sso-user");
               const ssoUser = await ensureSsoPnlUser(claims.email, claims.name);
               return {
