@@ -3,20 +3,20 @@ import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { SESSION_COOKIE } from "@/auth.config";
 import { CENTRAL_APP_COOKIE } from "@/lib/central/app-session";
+import { portalPublicUrl } from "@/lib/central/portal-public-url";
 import {
   defaultLocale,
   isAppLocale,
   LOCALE_COOKIE,
 } from "@/i18n/config";
 
-/** Old Auth.js / NextAuth cookie names that must never be decrypted with the current secret. */
 const STALE_COOKIE_PREFIXES = [
   "authjs.session-token",
   "__Secure-authjs.session-token",
   "__Host-authjs.session-token",
   "next-auth.session-token",
   "__Secure-next-auth.session-token",
-  "cj.session-token", // pre-v2 (exact + chunked .0/.1…)
+  "cj.session-token",
   "cj.session-token.v2",
   "__Secure-cj.session-token.v2",
 ];
@@ -65,19 +65,23 @@ function isPublicPath(pathname: string): boolean {
   return (
     pathname.startsWith("/login") ||
     pathname.startsWith("/logout") ||
+    pathname.startsWith("/apps") ||
     pathname.startsWith("/forgot-password") ||
     pathname.startsWith("/reset-password") ||
     pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/api/sso") ||
     pathname.startsWith("/api/cron")
   );
 }
 
-/**
- * Use getToken (read-only) instead of Auth.js `auth()` middleware.
- * The edge `authConfig` always had a 30-day session maxAge, which re-wrote
- * cookies and broke "Remember me" off (session should die when the browser closes).
- * Session length is applied correctly in `auth.ts` at sign-in / session refresh.
- */
+function portalRedirect(pathname: string): string {
+  const base = portalPublicUrl();
+  if (pathname.startsWith("/apps")) return `${base}/apps`;
+  if (pathname.startsWith("/forgot-password")) return `${base}/forgot-password`;
+  if (pathname.startsWith("/reset-password")) return `${base}${pathname}`;
+  return `${base}/login`;
+}
+
 export default async function middleware(req: NextRequest) {
   const res = NextResponse.next();
   ensureLocaleCookie(req, res);
@@ -85,14 +89,19 @@ export default async function middleware(req: NextRequest) {
   const stale = req.cookies
     .getAll()
     .filter((c) => isStaleSessionCookie(c.name));
-
-  if (stale.length > 0) {
-    for (const cookie of stale) {
-      expireCookie(res, cookie.name);
-    }
-  }
+  for (const cookie of stale) expireCookie(res, cookie.name);
 
   const { pathname } = req.nextUrl;
+
+  // Portal login /apps live on Installation_frontend now.
+  if (
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/apps") ||
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/reset-password")
+  ) {
+    return NextResponse.redirect(portalRedirect(pathname));
+  }
 
   const token = await getToken({
     req,
@@ -101,28 +110,18 @@ export default async function middleware(req: NextRequest) {
     salt: SESSION_COOKIE,
   });
 
-  // Visiting the app chooser clears the "inside P&L today" stamp.
-  if (pathname.startsWith("/apps") && req.cookies.get(CENTRAL_APP_COOKIE)?.value) {
+  if (req.cookies.get(CENTRAL_APP_COOKIE)?.value) {
     expireCookie(res, CENTRAL_APP_COOKIE);
   }
 
-  if (isPublicPath(pathname)) {
-    // Already signed in → portal chooser (multi-app) or single-app redirect from /apps.
-    if (token && pathname.startsWith("/login")) {
-      return NextResponse.redirect(new URL("/apps", req.url));
-    }
-    return res;
-  }
+  if (isPublicPath(pathname)) return res;
 
   if (!token) {
     if (pathname.startsWith("/api/")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const login = new URL("/login", req.url);
-    // Don't bounce multi-app users straight into last P&L deep-link after login.
-    if (pathname !== "/" && !pathname.startsWith("/apps")) {
-      login.searchParams.set("callbackUrl", pathname);
-    }
+    const login = new URL(`${portalPublicUrl()}/login`);
+    if (pathname !== "/") login.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(login);
   }
 

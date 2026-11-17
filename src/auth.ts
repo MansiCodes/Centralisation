@@ -152,10 +152,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async (req) => {
             if (ssoCode) {
               const claims = consumeSsoCode(ssoCode, "pnl");
               if (!claims) return null;
-              const ssoUser = await prisma.user.findFirst({
-                where: { email: claims.email.toLowerCase(), isActive: true },
-              });
-              if (!ssoUser) return null;
+              const { ensureSsoPnlUser } = await import("@/lib/central/ensure-sso-user");
+              const ssoUser = await ensureSsoPnlUser(claims.email, claims.name);
               return {
                 id: ssoUser.id,
                 email: ssoUser.email,
