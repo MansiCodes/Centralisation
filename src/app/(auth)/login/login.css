@@ -438,14 +438,20 @@
 }
 
 .login-form-card .form-grid {
-  gap: 0.65rem;
+  gap: 0.55rem;
+  align-content: start;
 }
 
+/* Keep CTA natural height — never stretch with flex/grid. */
 .login-submit {
   width: 100%;
   margin-top: 0;
   padding: 0.85rem 1.1rem;
   font-size: 1rem;
+  height: auto;
+  min-height: 0;
+  align-self: start;
+  flex: none;
 }
 
 /* Gold linear-gradient CTA; hover shifts to deeper brown-gold. */
@@ -522,7 +528,7 @@
 /* ---------- Responsive: stack on mobile ---------- */
 
 @media (max-width: 880px) {
-  /* No page/card scroll — compress spacing so Sign in fits. */
+  /* No scroll: shrink hero + gaps only. Button height stays unchanged. */
   .login-screen {
     flex-direction: column;
     height: 100dvh;
@@ -534,8 +540,8 @@
     flex: 0 0 auto;
     min-height: 0;
     height: auto;
-    max-height: 14dvh;
-    padding: 0.65rem 1.1rem 0.4rem;
+    max-height: 16dvh;
+    padding: 0.75rem 1.1rem 0.45rem;
     align-items: flex-end;
   }
 
@@ -544,12 +550,12 @@
   }
 
   .login-visual__brand {
-    font-size: clamp(1.4rem, 6vw, 1.85rem);
+    font-size: clamp(1.5rem, 6.5vw, 2rem);
   }
 
   .login-visual__tagline {
-    margin-top: 0.2rem;
-    font-size: 0.78rem;
+    margin-top: 0.25rem;
+    font-size: 0.82rem;
     max-width: 28ch;
   }
 
@@ -559,19 +565,16 @@
     align-items: stretch;
     justify-content: flex-start;
     overflow: hidden;
-    padding: 0.45rem 1.1rem calc(0.55rem + env(safe-area-inset-bottom));
+    padding: 0.55rem 1.1rem calc(0.65rem + env(safe-area-inset-bottom));
   }
 
   .login-form-card {
     max-width: none;
-    flex: 1 1 auto;
-    min-height: 0;
-    height: 100%;
+    height: auto;
     max-height: 100%;
     overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    padding: 0.85rem 1.1rem 0.9rem;
+    display: block;
+    padding: 1rem 1.1rem 1rem;
     border: 1px solid var(--border);
     border-radius: 20px;
     background: var(--bg-elevated);
@@ -581,52 +584,38 @@
   }
 
   .login-form-card__top {
-    margin-bottom: 0.45rem;
-    flex-shrink: 0;
+    margin-bottom: 0.55rem;
   }
 
   .login-form-card h2 {
-    font-size: 1.3rem;
-    padding-right: 0;
-  }
-
-  .login-form-card .lead {
-    font-size: 0.85rem;
+    font-size: 1.4rem;
   }
 
   .login-mode-tabs {
-    margin-bottom: 0.45rem;
-    flex-shrink: 0;
-  }
-
-  .login-mode-tabs button {
-    min-height: 38px;
-    padding: 0.4rem 0.55rem;
+    margin-bottom: 0.55rem;
   }
 
   .login-form-card .form-grid {
-    gap: 0.45rem;
-    flex: 1 1 auto;
-    min-height: 0;
+    gap: 0.4rem;
+    flex: none;
+    display: grid;
+    align-content: start;
+    align-items: start;
   }
 
-  .login-form-card .field label {
-    margin-bottom: 0.15rem;
-    font-size: 0.75rem;
-  }
-
-  .login-form-card .field input {
-    padding: 0.55rem 0.9rem;
-  }
-
-  .login-email-meta {
+  .login-form-card .login-remember-me,
+  .login-form-card .login-email-meta {
     margin: 0;
   }
 
+  /* Same button size as desktop — only pull it closer to Remember me. */
   .login-form-card .login-submit {
-    flex-shrink: 0;
-    margin-top: 0.15rem;
-    padding: 0.7rem 1rem;
+    margin-top: 0;
+    padding: 0.85rem 1.1rem;
+    height: auto;
+    min-height: unset;
+    align-self: stretch;
+    justify-self: stretch;
   }
 }
 
