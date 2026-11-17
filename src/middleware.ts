@@ -64,6 +64,7 @@ function ensureLocaleCookie(req: NextRequest, res: NextResponse) {
 function isPublicPath(pathname: string): boolean {
   return (
     pathname.startsWith("/login") ||
+    pathname.startsWith("/logout") ||
     pathname.startsWith("/forgot-password") ||
     pathname.startsWith("/reset-password") ||
     pathname.startsWith("/api/auth") ||
