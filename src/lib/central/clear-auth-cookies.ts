@@ -1,7 +1,9 @@
 import type { cookies } from "next/headers";
-import { REMEMBER_COOKIE } from "@/auth";
 import { SESSION_COOKIE } from "@/auth.config";
 import { CENTRAL_APP_COOKIE } from "@/lib/central/app-session";
+
+/** Keep in sync with REMEMBER_COOKIE in src/auth.ts (avoid importing auth here). */
+const REMEMBER_COOKIE = "cj.remember-me";
 
 type CookieJar = Awaited<ReturnType<typeof cookies>>;
 
