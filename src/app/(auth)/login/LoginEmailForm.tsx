@@ -74,8 +74,8 @@ export function LoginEmailForm({
           </button>
         </div>
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", marginTop: "0.5rem", marginBottom: "0.75rem" }}>
-        <label className="login-remember-me" style={{ margin: 0 }}>
+      <div className="login-email-meta">
+        <label className="login-remember-me">
           <input
             type="checkbox"
             checked={rememberMe}
@@ -89,9 +89,8 @@ export function LoginEmailForm({
         </label>
         <button
           type="button"
-          className="login-link-btn"
+          className="login-link-btn login-email-meta__forgot"
           onClick={onForgotPassword}
-          style={{ fontSize: "0.85rem", fontWeight: "bold" }}
         >
           {t("forgotPassword")}
         </button>
