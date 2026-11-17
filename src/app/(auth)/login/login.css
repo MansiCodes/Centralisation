@@ -500,7 +500,8 @@
 /* ---------- Responsive: stack on mobile ---------- */
 
 @media (max-width: 880px) {
-  /* Match .dash-main mobile horizontal padding (1.1rem). Lock to viewport. */
+  /* Match .dash-main mobile horizontal padding (1.1rem). Keep page locked;
+     only the form card may scroll so Sign in stays reachable. */
   .login-screen {
     flex-direction: column;
     height: 100dvh;
@@ -512,8 +513,8 @@
     flex: 0 0 auto;
     min-height: 0;
     height: auto;
-    max-height: 26dvh;
-    padding: 1.15rem 1.1rem 0.85rem;
+    max-height: 18dvh;
+    padding: 0.85rem 1.1rem 0.55rem;
     align-items: flex-end;
   }
 
@@ -522,12 +523,12 @@
   }
 
   .login-visual__brand {
-    font-size: clamp(1.85rem, 7.5vw, 2.35rem);
+    font-size: clamp(1.55rem, 6.5vw, 2rem);
   }
 
   .login-visual__tagline {
-    margin-top: 0.45rem;
-    font-size: 0.88rem;
+    margin-top: 0.3rem;
+    font-size: 0.82rem;
     max-width: 28ch;
   }
 
@@ -537,17 +538,21 @@
     align-items: stretch;
     justify-content: flex-start;
     overflow: hidden;
-    padding: 0.75rem 1.1rem calc(0.85rem + env(safe-area-inset-bottom));
+    padding: 0.55rem 1.1rem calc(0.75rem + env(safe-area-inset-bottom));
   }
 
   .login-form-card {
     max-width: none;
+    flex: 1 1 auto;
+    min-height: 0;
     height: auto;
     max-height: 100%;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     display: flex;
     flex-direction: column;
-    padding: 1.15rem 1.1rem 1rem;
+    padding: 1rem 1.1rem 1.15rem;
     border: 1px solid var(--border);
     border-radius: 20px;
     background: var(--bg-elevated);
@@ -557,16 +562,22 @@
   }
 
   .login-form-card__top {
-    margin-bottom: 0.85rem;
+    margin-bottom: 0.65rem;
   }
 
   .login-form-card h2 {
-    font-size: 1.55rem;
+    font-size: 1.4rem;
     padding-right: 0;
   }
 
   .login-mode-tabs {
-    margin-bottom: 0.85rem;
+    margin-bottom: 0.65rem;
+  }
+
+  .login-form-card .login-submit {
+    flex-shrink: 0;
+    margin-top: 0.35rem;
+    margin-bottom: 0.15rem;
   }
 }
 
