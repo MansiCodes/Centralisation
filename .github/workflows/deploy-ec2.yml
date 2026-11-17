@@ -1,4 +1,6 @@
-# Auto-deploy P&L / Centralisation to the EC2 box after push to main.
+# Auto-deploy P&L (Centralisation) to EC2 after push to main or dev.
+# Portal login /apps live on Installation_frontend — that app has its own workflow.
+# Server .env must set NEXT_BASE_PATH=/pnl, AUTH_URL, PORTAL_PUBLIC_URL, SSO_SECRET.
 # Required repo secrets (Settings → Secrets → Actions):
 #   EC2_HOST          e.g. 13.201.19.145
 #   EC2_USER          e.g. ubuntu
@@ -9,7 +11,7 @@ name: Deploy P&L to EC2
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
   workflow_dispatch:
 
 concurrency:
@@ -33,9 +35,10 @@ jobs:
             set -euo pipefail
             APP_DIR="${{ secrets.EC2_APP_DIR }}"
             APP_DIR="${APP_DIR:-/var/www/pnl}"
+            BRANCH="${{ github.ref_name }}"
             cd "$APP_DIR"
-            git fetch origin main
-            git reset --hard origin/main
+            git fetch origin "$BRANCH"
+            git reset --hard "origin/$BRANCH"
             export NODE_OPTIONS=--max-old-space-size=1536
             npm ci || npm install
             npx prisma generate
@@ -43,4 +46,4 @@ jobs:
             pm2 delete pnl || true
             pm2 start npm --name pnl -- start
             pm2 save
-            echo "Deploy OK $(git rev-parse --short HEAD)"
+            echo "Deploy OK $(git rev-parse --short HEAD) ($BRANCH)"
