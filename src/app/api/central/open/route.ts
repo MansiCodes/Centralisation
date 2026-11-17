@@ -3,7 +3,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { resolveCentralAccess, type CentralAppId } from "@/lib/central/access";
 import { CENTRAL_APP_COOKIE, pnlAppCookieValue } from "@/lib/central/app-session";
-import { mintSsoCode, pnlPublicUrl, workspacePublicUrl } from "@/lib/central/sso";
+import { mintSsoCode, workspacePublicUrl } from "@/lib/central/sso";
 
 const bodySchema = z.object({
   app: z.enum(["pnl", "workspace"]),
@@ -41,18 +41,19 @@ export async function POST(request: Request) {
   }
 
   if (app === "pnl") {
-    // Session is already P&L NextAuth — open home; SSO consume is for external entry only.
-    // Stamp "chose P&L today" so a fresh browser open next day returns to /apps chooser.
+    // Same-origin relative path — works behind nginx IP without depending on PNL_PUBLIC_URL.
     const res = NextResponse.json({
       ok: true,
-      url: `${pnlPublicUrl()}/`,
+      url: "/",
     });
     res.cookies.set(CENTRAL_APP_COOKIE, pnlAppCookieValue(), {
       path: "/",
       sameSite: "lax",
       maxAge: 60 * 60 * 24,
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: (process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? "").startsWith(
+        "https://",
+      ),
     });
     return res;
   }
