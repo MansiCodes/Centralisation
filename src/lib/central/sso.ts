@@ -1,7 +1,17 @@
 import { createHmac, randomBytes, timingSafeEqual } from "crypto";
 import type { CentralAppId } from "./access";
 
-const used = new Map<string, number>();
+export type SsoClaims = {
+  v: 1;
+  jti: string;
+  email: string;
+  name?: string | null;
+  app: CentralAppId;
+  exp: number;
+};
+
+/** jti → { claims, until } — brief replay for Auth.js double authorize. */
+const used = new Map<string, { claims: SsoClaims; until: number }>();
 
 function secret(): string {
   const s = process.env.SSO_SECRET || process.env.AUTH_SECRET;
@@ -20,19 +30,10 @@ function sign(payloadB64: string): string {
 
 function pruneUsed() {
   const now = Date.now();
-  for (const [k, exp] of used) {
-    if (exp < now) used.delete(k);
+  for (const [k, entry] of used) {
+    if (entry.until < now) used.delete(k);
   }
 }
-
-export type SsoClaims = {
-  v: 1;
-  jti: string;
-  email: string;
-  name?: string | null;
-  app: CentralAppId;
-  exp: number;
-};
 
 export function mintSsoCode(input: {
   email: string;
@@ -80,9 +81,14 @@ export function consumeSsoCode(
   if (claims.v !== 1 || !claims.jti || !claims.email || !claims.app) return null;
   if (claims.exp < Math.floor(Date.now() / 1000)) return null;
   if (expectApp && claims.app !== expectApp) return null;
-  if (used.has(claims.jti)) return null;
 
-  used.set(claims.jti, Date.now() + 5 * 60_000);
+  const prior = used.get(claims.jti);
+  if (prior) {
+    // shortcut: Auth.js may call authorize twice; allow same claims for 45s
+    return prior.until > Date.now() ? prior.claims : null;
+  }
+
+  used.set(claims.jti, { claims, until: Date.now() + 45_000 });
   return claims;
 }
 
