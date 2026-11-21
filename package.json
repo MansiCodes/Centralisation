@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "tsx --test src/lib/central/access.test.ts src/lib/dashboard/cat6-period.test.ts src/lib/plant-catalogs/quad-expense-name.test.ts src/lib/quad-signal-form-stock.test.ts src/components/admin/users/user-form-modal-model.test.ts",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",

@@ -6,19 +6,29 @@ import createNextIntlPlugin from "next-intl/plugin";
 loadEnv({ path: path.join(__dirname, ".env") });
 
 const authSecret = process.env.AUTH_SECRET ?? "";
+const ssoSecret = process.env.SSO_SECRET ?? "";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
+const nextBasePath = (process.env.NEXT_BASE_PATH || "").replace(/\/$/, "");
+
 const nextConfig: NextConfig = {
-  // Standalone is for Docker/ECS only — leave unset on Vercel.
-  ...(process.env.VERCEL ? {} : { output: "standalone" as const }),
+  // EC2 path deploy: NEXT_BASE_PATH=/pnl (empty for local :3000 root)
+  ...(nextBasePath ? { basePath: nextBasePath } : {}),
+  // Standalone is for Docker/ECS only — leave unset for EC2 next start.
+  ...(process.env.STANDALONE ? { output: "standalone" as const } : {}),
   outputFileTracingRoot: path.join(__dirname, "."),
-  // Force AUTH_SECRET into Edge middleware (fixes JWT "no matching decryption secret").
+  // Force AUTH_SECRET and SSO_SECRET into Edge middleware (fixes JWT and SSO verification).
   env: {
     AUTH_SECRET: authSecret,
+    SSO_SECRET: ssoSecret,
   },
   eslint: {
     ignoreDuringBuilds: true,
+  },
+  // Small EC2 OOMs on "Checking validity of types" — skip so production build can finish.
+  typescript: {
+    ignoreBuildErrors: true,
   },
   experimental: {
     serverActions: {

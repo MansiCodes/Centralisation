@@ -1,8 +1,7 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/shell/AppShell";
 import { accessCount, resolveCentralAccess } from "@/lib/central/access";
-import { CENTRAL_APP_COOKIE, isPnlChosenToday } from "@/lib/central/app-session";
+import { portalPublicUrl } from "@/lib/central/portal-public-url";
 import { prisma } from "@/lib/db";
 import {
   canAccessMachineProduction,
@@ -37,19 +36,7 @@ export default async function AppLayout({
 }) {
   const session = await getLayoutSession();
   if (!session?.user) {
-    redirect("/login");
-  }
-
-  const portalAccess = resolveCentralAccess({
-    email: session.user.email,
-    globalRole: session.user.globalRole,
-  });
-  const multiAppPortal = accessCount(portalAccess) > 1;
-  if (multiAppPortal) {
-    const jar = await cookies();
-    if (!isPnlChosenToday(jar.get(CENTRAL_APP_COOKIE)?.value)) {
-      redirect("/apps");
-    }
+    redirect(`${portalPublicUrl()}/login`);
   }
 
   const dbUser = await prisma.user.findUnique({
@@ -63,11 +50,12 @@ export default async function AppLayout({
       globalRole: true,
       name: true,
       email: true,
+      avatarUrl: true,
       isActive: true,
     },
   });
   if (!dbUser || !dbUser.isActive) {
-    redirect("/login");
+    redirect(`${portalPublicUrl()}/login`);
   }
   const user = {
     ...session.user,
@@ -82,6 +70,13 @@ export default async function AppLayout({
   };
   const role = user.globalRole;
   const globalPlantAccess = role ? hasGlobalPlantAccess(role) : false;
+  const multiAppPortal =
+    accessCount(
+      resolveCentralAccess({
+        email: user.email,
+        globalRole: user.globalRole,
+      }),
+    ) > 1;
 
   const mpOpts = {
     canMachineSupervise: Boolean(user.canMachineSupervise),
@@ -182,6 +177,7 @@ export default async function AppLayout({
               name: user.name ?? null,
               email: user.email ?? "",
               role: user.globalRole,
+              avatarUrl: dbUser.avatarUrl ?? null,
               canAccessStock: Boolean(user.canAccessStock),
             }
           : null

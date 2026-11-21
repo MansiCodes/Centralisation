@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { Toaster } from "@/components/ui/Toaster";
+import { CRYPTO_RANDOM_UUID_POLYFILL } from "@/lib/crypto-random-uuid-inline";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -32,6 +34,11 @@ export default async function RootLayout({
         />
       </head>
       <body className="font-app">
+        <Script
+          id="crypto-randomuuid-polyfill"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: CRYPTO_RANDOM_UUID_POLYFILL }}
+        />
         <NextIntlClientProvider messages={messages}>
           {children}
           <Toaster />

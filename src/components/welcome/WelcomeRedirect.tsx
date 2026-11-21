@@ -13,6 +13,7 @@ export function WelcomeRedirect({ plantName }: { plantName: string }) {
   useEffect(() => {
     const timer = window.setTimeout(() => {
       router.replace("/");
+      router.refresh();
     }, REDIRECT_DELAY_MS);
     return () => window.clearTimeout(timer);
   }, [router]);

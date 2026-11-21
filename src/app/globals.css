@@ -731,6 +731,11 @@ textarea {
   transition: margin-left 200ms ease;
 }
 
+.dash-main:has(.pnl-profile-page) {
+  padding: 0.75rem 1.5rem 1rem;
+  overflow-y: hidden;
+}
+
 .dash-shell--collapsed .dash-main {
   margin-left: var(--sidebar-w-collapsed);
 }
@@ -2135,4 +2140,296 @@ textarea {
 .app-toast--error .app-toast__title {
   color: var(--danger) !important;
   font-weight: 600;
+}
+
+/* ---------- Header Profile Dropdown Menu ---------- */
+.dash-profile-menu {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.dash-profile-menu__trigger {
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.dash-header__avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+.dash-header__avatar-text {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--teal, #127269);
+  line-height: 1;
+}
+
+.dash-profile-menu__dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 230px;
+  background: #ffffff;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
+  padding: 8px 0;
+  z-index: 1000;
+  box-sizing: border-box;
+}
+
+.dash-profile-menu__user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px 10px;
+}
+
+.dash-profile-menu__user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--teal-soft, #e6f4f2);
+  color: var(--teal, #127269);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.82rem;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 1px solid var(--border, #e5e7eb);
+}
+
+.dash-profile-menu__user-details {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dash-profile-menu__user-name {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #111827;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-profile-menu__user-email {
+  font-size: 0.72rem;
+  color: #6b7280;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-profile-menu__user-role {
+  display: inline-block;
+  align-self: flex-start;
+  margin-top: 3px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  background: #f0fdf4;
+  color: #15803d;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dash-profile-menu__divider {
+  height: 1px;
+  background: var(--border, #e5e7eb);
+  margin: 4px 0;
+}
+
+.dash-profile-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 14px;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: #374151;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 120ms ease, color 120ms ease;
+  box-sizing: border-box;
+}
+
+.dash-profile-menu__item:hover {
+  background: #f9fafb;
+  color: #111827;
+}
+
+.dash-profile-menu__item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.dash-profile-menu__item:hover .dash-profile-menu__item-icon {
+  color: #111827;
+}
+
+.dash-profile-menu__logout-form {
+  margin: 0;
+  padding: 0;
+  display: block;
+  width: 100%;
+}
+
+.dash-profile-menu__item--danger {
+  color: #dc2626;
+}
+
+.dash-profile-menu__item--danger:hover {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.dash-profile-menu__item--danger .dash-profile-menu__item-icon {
+  color: #dc2626;
+}
+
+.dash-profile-menu__item--danger:hover .dash-profile-menu__item-icon {
+  color: #b91c1c;
+}
+
+/* ---------- Sidebar Bottom-Left User Menu ---------- */
+.dash-sidebar-user-wrap {
+  position: relative;
+  width: 100%;
+  margin-top: auto;
+}
+
+.dash-sidebar__user-btn {
+  width: calc(100% - 1.2rem);
+  text-align: left;
+  cursor: pointer;
+  transition: all 150ms ease;
+  font-family: inherit;
+}
+
+.dash-sidebar__user-btn:hover,
+.dash-sidebar__user-btn.is-active {
+  border-color: var(--teal-ink, #0e5a54);
+  background: var(--teal-soft, #f0fdf4);
+}
+
+.dash-sidebar__user-chevron {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--fg-muted, #64748b);
+}
+
+.dash-sidebar-user-menu {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0.6rem;
+  width: calc(100% - 1.2rem);
+  min-width: 210px;
+  background: #ffffff;
+  border: 1.5px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+  padding: 8px 0;
+  z-index: 1000;
+  box-sizing: border-box;
+}
+
+.dash-sidebar-user-menu__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 14px 10px;
+}
+
+.dash-sidebar-user-menu__name {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #111827;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-sidebar-user-menu__email {
+  font-size: 0.72rem;
+  color: #6b7280;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-sidebar-user-menu__role {
+  display: inline-block;
+  align-self: flex-start;
+  margin-top: 3px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  background: #f0fdf4;
+  color: #15803d;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dash-sidebar-user-menu__divider {
+  height: 1px;
+  background: var(--border, #e5e7eb);
+  margin: 4px 0;
+}
+
+.dash-sidebar-user-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 14px;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: #374151;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 120ms ease, color 120ms ease;
+  box-sizing: border-box;
+}
+
+.dash-sidebar-user-menu__item:hover {
+  background: #f9fafb;
+  color: #111827;
+}
+
+.dash-sidebar-user-menu__form {
+  margin: 0;
+  padding: 0;
+  display: block;
+  width: 100%;
+}
+
+.dash-sidebar-user-menu__item--danger {
+  color: #dc2626;
+}
+
+.dash-sidebar-user-menu__item--danger:hover {
+  background: #fef2f2;
+  color: #b91c1c;
 }

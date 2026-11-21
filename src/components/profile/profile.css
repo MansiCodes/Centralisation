@@ -1,0 +1,202 @@
+.pnl-profile-page {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0.5rem 1.25rem 1rem;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.pnl-profile-header {
+  margin-bottom: 0.85rem;
+}
+
+.pnl-profile-header__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--fg, #1a2421);
+  margin: 0 0 0.15rem;
+}
+
+.pnl-profile-header__subtitle {
+  font-size: 0.875rem;
+  color: var(--fg-muted, #5a6b64);
+  margin: 0;
+}
+
+.pnl-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.pnl-profile-card {
+  background: var(--bg-elevated, #ffffff);
+  border: 1px solid var(--border, #e4e8e5);
+  border-radius: var(--radius, 16px);
+  box-shadow: var(--shadow, 0 1px 2px rgb(15 40 36 / 6%), 0 8px 24px rgb(15 40 36 / 8%));
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.pnl-profile-card__title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--fg, #1a2421);
+  margin: 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border, #e4e8e5);
+}
+
+.pnl-avatar-edit {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.pnl-avatar-edit__preview {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2px solid rgba(20, 184, 166, 0.35);
+  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 45%, #0e5a54 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+  overflow: hidden;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(14, 90, 84, 0.22);
+}
+
+.pnl-avatar-edit__preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pnl-avatar-edit__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pnl-btn-secondary {
+  background: #f1f5f3;
+  color: var(--fg, #1a2421);
+  border: 1px solid var(--border, #e4e8e5);
+  border-radius: 8px;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.pnl-btn-secondary:hover:not(:disabled) {
+  background: #e4ebe6;
+}
+
+.pnl-btn-danger {
+  color: var(--danger, #b91c1c);
+  background: var(--danger-soft, #fee2e2);
+  border-color: #fca5a5;
+}
+
+.pnl-btn-danger:hover:not(:disabled) {
+  background: #fecaca;
+}
+
+.pnl-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.pnl-field span {
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--fg-muted, #5a6b64);
+}
+
+.pnl-field input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border, #e4e8e5);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--fg, #1a2421);
+  background: #ffffff;
+  transition: border-color 150ms ease;
+}
+
+.pnl-field input:disabled {
+  background: #f4f6f5;
+  color: #7d8c85;
+  cursor: not-allowed;
+}
+
+.pnl-field input:focus {
+  outline: none;
+  border-color: var(--teal, #127269);
+  box-shadow: 0 0 0 3px rgba(18, 114, 105, 0.15);
+}
+
+.pnl-save-btn {
+  background: var(--teal-fill, linear-gradient(90deg, #14b8a6 0%, #0d9488 45%, #0e5a54 100%));
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.15rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: auto;
+  align-self: flex-start;
+  transition: opacity 150ms ease;
+}
+
+.pnl-save-btn:hover:not(:disabled) {
+  background: var(--teal-fill-hover, linear-gradient(90deg, #0d9488 0%, #0e5a54 55%, #0a4742 100%));
+}
+
+.pnl-save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pnl-msg {
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.pnl-msg--success {
+  background: #d1fae5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.pnl-msg--error {
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+}
+
+@media (max-width: 640px) {
+  .pnl-profile-page {
+    padding: 1rem 1rem 3rem;
+  }
+  .pnl-profile-card {
+    padding: 1.25rem 1rem;
+    border-radius: 12px;
+  }
+}

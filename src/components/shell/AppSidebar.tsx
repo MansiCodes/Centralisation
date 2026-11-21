@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { AppHeaderUser } from "./AppHeader";
@@ -7,31 +8,7 @@ import type { NavSection } from "./nav-config";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { PlantSwitcher, type PlantSwitcherPlant } from "./PlantSwitcher";
 import { SidebarNav } from "./app-sidebar-nav";
-import { formatRole, initialsFor } from "./app-sidebar-icons";
-
-function SidebarUser({
-  user,
-  showLabels,
-}: {
-  user: AppHeaderUser;
-  showLabels: boolean;
-}) {
-  return (
-    <div className="dash-sidebar__user" title={user.email}>
-      <span className="dash-header__avatar" aria-hidden="true">
-        {initialsFor(user.name, user.email)}
-      </span>
-      {showLabels ? (
-        <div className="dash-sidebar__user-meta">
-          <span className="dash-header__user-name">{formatRole(user.role)}</span>
-          <span className="dash-sidebar__user-email" title={user.email}>
-            {user.email}
-          </span>
-        </div>
-      ) : null}
-    </div>
-  );
-}
+import { SidebarUserMenu } from "./SidebarUserMenu";
 
 type AppSidebarProps = {
   navSections: NavSection[];
@@ -75,7 +52,7 @@ export function AppSidebar({
           allowAllPlants={allowAllPlants}
           showLabels={!collapsed}
         />
-        {user ? <SidebarUser user={user} showLabels={!collapsed} /> : null}
+        {user ? <SidebarUserMenu user={user} showLabels={!collapsed} /> : null}
       </aside>
 
       {mobileOpen ? (
@@ -111,7 +88,7 @@ export function AppSidebar({
               </span>
               <LanguageSwitcher compact />
             </div>
-            {user ? <SidebarUser user={user} showLabels /> : null}
+            {user ? <SidebarUserMenu user={user} showLabels onNavigate={onCloseMobile} /> : null}
           </div>
         </div>
       ) : null}
